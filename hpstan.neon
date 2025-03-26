@@ -1,0 +1,28 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/
+        - routes/
+        - tests/
+
+    level: 7
+
+    ignoreErrors:
+        - '#Call to an undefined method [a-zA-Z0-9\\]+::find\(\)#'
+        - '#Call to an undefined method [a-zA-Z0-9\\]+::first\(\)#'
+        - '#Call to an undefined method [a-zA-Z0-9\\]+::get\(\)#'
+        - '#Call to an undefined method [a-zA-Z0-9\\]+::where\(\)#'
+
+    excludePaths:
+        - storage/*
+        - vendor/*
+        - bootstrap/cache/*
+        - _ide_helper.php
+        - _ide_helper_models.php
+        - .phpstorm.meta.php
+
+    checkMissingIterableValueType: false
