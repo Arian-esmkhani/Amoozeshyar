@@ -35,7 +35,7 @@ class LoginController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/main');
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         }

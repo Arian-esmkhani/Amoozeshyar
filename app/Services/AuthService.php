@@ -23,19 +23,24 @@ class AuthService
     {
         $this->checkLoginAttempts($credentials['username']);
 
+        // ابتدا کاربر را پیدا می‌کنیم
+        $user = UserBase::where('username', $credentials['username'])->first();
+
         if (!Auth::attempt($credentials)) {
             $this->incrementLoginAttempts($credentials['username']);
 
-            // ثبت تلاش ناموفق در تاریخچه
-            LoginHistory::create([
-                'user_id' => UserBase::where('username', $credentials['username'])->first()?->id,
-                'login_time' => now(),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'status' => 'failed',
-                'failure_reason' => 'نام کاربری یا رمز عبور اشتباه است',
-                'is_active' => false
-            ]);
+            // فقط اگر کاربر وجود داشت، تلاش ناموفق را ثبت می‌کنیم
+            if ($user) {
+                LoginHistory::create([
+                    'user_id' => $user->id,
+                    'login_time' => now(),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'status' => 'failed',
+                    'failure_reason' => 'نام کاربری یا رمز عبور اشتباه است',
+                    'is_active' => false
+                ]);
+            }
 
             throw ValidationException::withMessages([
                 'username' => ['نام کاربری یا رمز عبور اشتباه است.'],
@@ -47,7 +52,7 @@ class AuthService
         $this->resetLoginAttempts($credentials['username']);
 
         // ثبت لاگین موفق در تاریخچه
-        LoginHistory::create([
+        $loginHistory = LoginHistory::create([
             'user_id' => $user->id,
             'login_time' => now(),
             'ip_address' => request()->ip(),
@@ -58,7 +63,7 @@ class AuthService
         ]);
 
         // Queue user login event
-        Queue::push(new ProcessUserLogin($user, $this->cacheService));
+        Queue::push(new ProcessUserLogin($user));
 
         return [
             'user' => $user,

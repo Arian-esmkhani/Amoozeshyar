@@ -15,30 +15,33 @@ class ProcessUserLogin implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private UserBase $user;
-    private CacheService $cacheService;
+    private int $userId;
 
-    public function __construct(UserBase $user, CacheService $cacheService)
+    public function __construct(UserBase $user)
     {
-        $this->user = $user;
-        $this->cacheService = $cacheService;
+        $this->userId = $user->id;
     }
 
-    public function handle(): void
+    public function handle(CacheService $cacheService): void
     {
         try {
+            $user = UserBase::find($this->userId);
+            if (!$user) {
+                return;
+            }
+
             // Cache user data
-            $this->cacheService->getUserFromCache($this->user->id);
+            $cacheService->getUserFromCache($user->id);
 
             // Log login event
             Log::info('User logged in', [
-                'user_id' => $this->user->id,
-                'username' => $this->user->username,
-                'role' => $this->user->role,
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'role' => $user->role,
             ]);
         } catch (\Exception $e) {
             Log::error('Error processing user login', [
-                'user_id' => $this->user->id,
+                'user_id' => $this->userId,
                 'error' => $e->getMessage(),
             ]);
         }
