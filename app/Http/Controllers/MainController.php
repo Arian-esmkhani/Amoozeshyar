@@ -18,6 +18,7 @@ class MainController extends Controller
     public function index()
     {
         $user = Auth::user();
+
         $userData = $this->cacheService->remember(
             "user_data_{$user->id}",
             3600,

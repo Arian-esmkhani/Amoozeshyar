@@ -6,35 +6,34 @@ use Illuminate\Database\Eloquent\Model;//فرا خوانی مدل
 use Illuminate\Database\Eloquent\SoftDeletes;//فرا خوانی سافت دیلیت
 
 /**
- * کلاسی برای تعریف مدل اطلاعات کاربر
+ * کلاسی برای تعریف مدل وضعیت کاربر
  */
-class UserData extends Model
+class UserStatus extends Model
 {
     //استفاده از حذف امن
     use SoftDeletes;
 
-    //ارتباط با تیبل اطلاعات کاربر
-    protected $table = 'users_data';
+    //ارتباط با تیبل وضعیت کاربر
+    protected $table = 'user_status';
 
     //فیلد هایی که می توانند پر شوند
     protected $fillable = [
         'user_id',
-        'name',
-        'father_name',
-        'national_code',
-        'birth_date',
-        'gender',
-        'religion',
-        'denomination',
-        'health_status',
-        'address',
-        'phone_number',
-        'emergency_contact'
+        'min_unit',
+        'max_unit',
+        'passed_units',
+        'loss_units',
+        'unit_interm',
+        'pas_term',
+        'take_listen',
+        'allowed_term',
+        'student_status',
+        'can_take_courses'
     ];
 
     //کاست کردن فیلد ها
     protected $casts = [
-        'birth_date' => 'date'
+        'can_take_courses' => 'boolean',
     ];
 
     //ارتباط با جدول یوزر بیس از طریق یوزر آی دی

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\VahedController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Volt;
@@ -21,4 +22,5 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/main', [MainController::class, 'index'])->name('main');
+    Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
 });

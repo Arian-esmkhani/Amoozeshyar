@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Livewire\LivewireServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,6 +15,8 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.debug')) {
             $this->app->register(\Barryvdh\Debugbar\ServiceProvider::class);
         }
+
+        $this->app->register(LivewireServiceProvider::class);
     }
 
     /**

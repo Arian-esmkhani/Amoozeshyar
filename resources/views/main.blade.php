@@ -20,7 +20,7 @@
                 <div class="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
                 <div class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8">
                     <div class="group bg-white/10 backdrop-blur-lg rounded-xl p-6 hover:bg-white/20 transition-all duration-300 border border-gray-700/50">
-                        <div class="flex flex-col items-center text-center">
+                        <a href="{{ route('entekhab-vahed') }}" class="flex flex-col items-center text-center">
                             <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -28,7 +28,7 @@
                             </div>
                             <h3 class="text-lg font-bold text-white mb-2">انتخاب واحد</h3>
                             <p class="text-gray-300 text-sm">ثبت نام در دروس ترم جاری</p>
-                        </div>
+                        </a>
                     </div>
 
                     <div class="group bg-white/10 backdrop-blur-lg rounded-xl p-6 hover:bg-white/20 transition-all duration-300 border border-gray-700/50">
