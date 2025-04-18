@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use App\Services\AccountService;
 
 /**
  * کلاس کامپوننت انتخاب واحد
@@ -18,6 +19,15 @@ use Livewire\Component;
  */
 class EntekhabVahed extends Component
 {
+    //این متغیر برای سرویس کار با بخش مالی کار بر است
+    protected $accountService;
+
+    //این کانستراکتور برای سرویس کار با بخش مالی کار بر است
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     /**
      * حداقل واحد مجاز برای انتخاب
      * @var int
@@ -38,6 +48,8 @@ class EntekhabVahed extends Component
      * شامل اطلاعات کامل هر درس مانند نام، استاد، زمان و ظرفیت
      */
     public $lessons;
+
+    public $takeListen;
 
     /**
      * آرایه دروس انتخاب شده
@@ -65,7 +77,7 @@ class EntekhabVahed extends Component
      * @var int
      * این متغیر به صورت خودکار با تغییر دروس انتخاب شده بروز می شود
      */
-    public $totalDebt = 0;
+    public $totalMoney = 0;
 
     /**
      * وضعیت نمایش لیست دروس
@@ -83,6 +95,27 @@ class EntekhabVahed extends Component
      */
     public $showLessonDetails = false;
 
+    public $groupedLessons = [];
+    public $selectedGroup = null;
+
+    /**
+     * لیست دروس منحصر به فرد (بدون تکرار)
+     * @var Collection
+     */
+    public $uniqueLessons = [];
+
+    /**
+     * لیست تمام کلاس‌های یک درس خاص
+     * @var Collection
+     */
+    public $selectedLessonClasses = [];
+
+    /**
+     * نام درس انتخاب شده برای نمایش جزئیات
+     * @var string
+     */
+    public $selectedLessonName = '';
+
     /**
      * متد مقداردهی اولیه کامپوننت
      *
@@ -98,6 +131,29 @@ class EntekhabVahed extends Component
         $this->minUnits = $data['minMax']->min_unit;
         $this->maxUnits = $data['minMax']->max_unit;
         $this->lessons = $data['lessonOffered'];
+        $this->takeListen = $data['takeListen'];
+        $this->groupLessons();
+        $this->prepareUniqueLessons();
+    }
+
+    protected function groupLessons()
+    {
+        $this->groupedLessons = $this->lessons->groupBy('lesten_name')->map(function ($group) {
+            return [
+                'name' => $group->first()->lesten_name,
+                'unit_count' => $group->first()->unit_count,
+                'classes' => $group->values()
+            ];
+        })->values();
+    }
+
+    /**
+     * آماده‌سازی لیست دروس منحصر به فرد
+     * این متد دروس تکراری را حذف می‌کند و فقط یک نمونه از هر درس را نگه می‌دارد
+     */
+    protected function prepareUniqueLessons()
+    {
+        $this->uniqueLessons = $this->lessons->unique('lesten_name');
     }
 
     /**
@@ -116,7 +172,7 @@ class EntekhabVahed extends Component
         //برسی اگر درس قبلا انتخاب شده باشد
         if (in_array($lessonId, $this->selectedLessons)) {
             $this->selectedLessons = array_diff($this->selectedLessons, [$lessonId]);
-        //اگر درس قبلا انتخاب نشده باشد
+            //اگر درس قبلا انتخاب نشده باشد
         } else {
             //درس را از لیست دروس انتخاب کنیم
             $lesson = $this->lessons->firstWhere('id', $lessonId);
@@ -146,7 +202,7 @@ class EntekhabVahed extends Component
         $this->calculateTotalUnits();
 
         //محاسبه حزینه کل دروس
-        $this->calculateTotalDebt();
+        $this->calculateTotalMoney();
 
         //جزئیات درس را مخفی کنیم
         $this->showLessonDetails = false;
@@ -170,25 +226,65 @@ class EntekhabVahed extends Component
      * این متد پس از هر تغییر در لیست دروس انتخاب شده
      * هزینه کلوا برای دروس انتخاب شده را محاسبه می‌کند
      */
-    protected function calculateTotalDebt()
+    protected function calculateTotalMoney()
     {
-        $this->totalDebt = $this->lessons->whereIn('id', $this->selectedLessons)->sum('debt');
+        $this->totalMoney = $this->lessons->whereIn('id', $this->selectedLessons)->sum('lesten_price');
     }
-
 
     /**
      * نمایش جزئیات یک درس
-     *
-     * این متد در زمان کلیک روی نام درس اجرا می‌شود
-     * و جزئیات کامل درس را نمایش می‌دهد
-     *
-     * @param int $lessonId شناسه درس مورد نظر
+     * این متد تمام کلاس‌های یک درس خاص را پیدا می‌کند
+     * @param string $lessonName نام درس مورد نظر
      */
-    public function showLessonDetails($lessonId)
+    public function showLessonDetails($lessonName)
     {
-        $this->selectedLesson = $this->lessons->firstWhere('id', $lessonId);
-        $this->showLessonDetails = true;
-        $this->showLessonList = false;
+        try {
+            // لاگ برای بررسی داده‌های ورودی
+            logger()->info('showLessonDetails called with:', [
+                'lessonName' => $lessonName,
+                'lessonsCount' => $this->lessons->count(),
+                'currentShowLessonList' => $this->showLessonList,
+                'currentShowLessonDetails' => $this->showLessonDetails
+            ]);
+
+            $this->selectedLessonName = $lessonName;
+            $this->selectedLessonClasses = $this->lessons->where('lesten_name', $lessonName)->values();
+
+            // لاگ برای بررسی نتیجه جستجو
+            logger()->info('Search results:', [
+                'selectedLessonClassesCount' => $this->selectedLessonClasses->count(),
+                'firstClass' => $this->selectedLessonClasses->first()
+            ]);
+
+            if ($this->selectedLessonClasses->isEmpty()) {
+                $this->dispatch('show-message', [
+                    'type' => 'error',
+                    'message' => 'هیچ کلاسی برای این درس یافت نشد.'
+                ]);
+                return;
+            }
+
+            $this->showLessonList = false;
+            $this->showLessonDetails = true;
+
+            // لاگ برای بررسی وضعیت نهایی
+            logger()->info('Final state:', [
+                'showLessonList' => $this->showLessonList,
+                'showLessonDetails' => $this->showLessonDetails,
+                'selectedLessonName' => $this->selectedLessonName
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Error in showLessonDetails:', [
+                'message' => $e->getMessage(),
+                'lessonName' => $lessonName,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => 'خطا در نمایش جزئیات درس.'
+            ]);
+        }
     }
 
     /**
@@ -218,11 +314,31 @@ class EntekhabVahed extends Component
             return;
         }
 
-        // TODO: ذخیره دروس انتخاب شده در دیتابیس
-        $this->dispatch('show-message', [
-            'type' => 'success',
-            'message' => 'دروس با موفقیت ثبت شدند.'
-        ]);
+        try {
+            // دریافت وضعیت کاربر
+            $takeListen = $this->takeListen;
+
+            // تبدیل آرایه درس‌های انتخاب شده به JSON
+            $selectedLessonsJson = json_encode($this->selectedLessons);
+
+            // به‌روزرسانی ستون take_listen
+            $takeListen->update([
+                'take_listen' => $selectedLessonsJson
+            ]);
+
+            //به‌روزرسانی بدهی کاربر
+            $this->accountService->UbdateDebt($this->totalMoney);
+
+            $this->dispatch('show-message', [
+                'type' => 'success',
+                'message' => 'دروس با موفقیت ثبت شدند.'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => 'خطا در ثبت دروس: ' . $e->getMessage()
+            ]);
+        }
     }
 
     /**

@@ -36,20 +36,41 @@ class VahedController extends Controller
 
                 $minMax = UserStatus::where('user_id', $user->id)->select('min_unit', 'max_unit')->first();
                 $userData = UserData::where('user_id', $user->id)->first();
+                $takeListen = UserStatus::where('user_id', $user->id)->value('take_listen');
 
                 // دریافت درس‌های پیشنهادی
                 $lessonOffered = LessonOffered::where(function ($query) use ($studentMajor) {
                     $query->whereIn('major', [$studentMajor, 'عمومی', 'مهندسی']);
                 })
-                ->where(function ($query) use ($studentSex) {
-                    $query->whereIn('lesson_sex', [$studentSex, 'open']);
+                    ->where(function ($query) use ($studentSex) {
+                        $query->whereIn('lesson_sex', [$studentSex, 'open']);
+                    })
+                    ->get()
+                    ->filter(function ($lesson) use ($passedLesson) {
+                        // اگر درس پیش‌نیاز ندارد، می‌تواند انتخاب شود
+                        if (empty($lesson->prerequisites)) {
+                            return true;
+                        }
 
-                })
-                ->where(function ($query) use ($passedLesson) {
-                    $query->where('prerequisites', 'LIKE', "%{$passedLesson}%")
-                          ->orWhereNull('prerequisites');
-                })
-                ->get();
+                        // اگر درس پیش‌نیاز دارد و دانشجو هیچ درسی را پاس نکرده
+                        if (empty($passedLesson)) {
+                            return false;
+                        }
+
+                        // بررسی پیش‌نیازها
+                        $prerequisites = explode(' ', $lesson->prerequisites);
+                        $passedLessons = explode(' ', $passedLesson);
+
+                        // بررسی می‌کند که آیا حداقل یکی از پیش‌نیازها در دروس پاس شده وجود دارد
+                        foreach ($prerequisites as $prerequisite) {
+                            if (in_array($prerequisite, $passedLessons)) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    })
+                    ->values();
 
 
                 // بازگرداندن داده‌های درس‌های پیشنهادی و minMax
@@ -57,6 +78,7 @@ class VahedController extends Controller
                     'lessonOffered' => $lessonOffered,
                     'minMax' => $minMax,
                     'userData' => $userData,
+                    'takeListen' => $takeListen
                 ];
             }
         );

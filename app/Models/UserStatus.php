@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;//فرا خوانی مدل
-use Illuminate\Database\Eloquent\SoftDeletes;//فرا خوانی سافت دیلیت
+use Illuminate\Database\Eloquent\Model; //فرا خوانی مدل
+use Illuminate\Database\Eloquent\SoftDeletes; //فرا خوانی سافت دیلیت
 
 /**
  * کلاسی برای تعریف مدل وضعیت کاربر
@@ -24,21 +24,25 @@ class UserStatus extends Model
         'passed_units',
         'loss_units',
         'unit_interm',
-        'pas_term',
+        'unit_intership',
+        'free_unit',
+        'pass_term',
         'take_listen',
         'allowed_term',
         'student_status',
-        'can_take_courses'
+        'can_take_courses',
+        'academic_notes'
     ];
 
     //کاست کردن فیلد ها
     protected $casts = [
         'can_take_courses' => 'boolean',
+        'take_listen' => 'json'
     ];
 
     //ارتباط با جدول یوزر بیس از طریق یوزر آی دی
     public function user()
     {
-        return $this->belongsTo(UserBase::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

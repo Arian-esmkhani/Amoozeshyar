@@ -13,6 +13,9 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        hmr: {
+            host: 'amoozeshyar.test'
+        },
         cors: false,
     },
 });

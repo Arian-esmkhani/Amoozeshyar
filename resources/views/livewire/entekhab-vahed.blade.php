@@ -94,28 +94,32 @@
     @endif
 
     <!-- مودال نمایش لیست دروس -->
-    <!-- این مودال در صورت کلیک روی دکمه انتخاب درس جدید نمایش داده می‌شود -->
     @if($showLessonList)
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen px-4">
+                <!-- پس‌زمینه تار -->
+                <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" wire:click="$set('showLessonList', false)"></div>
+
                 <!-- محتوای مودال -->
                 <div class="relative bg-gray-900 rounded-xl p-8 max-w-2xl w-full border border-gray-700">
+                    <!-- عنوان مودال -->
                     <h3 class="text-xl font-bold text-white mb-6">درس‌های قابل برداشت</h3>
-                    <!-- لیست دروس قابل انتخاب -->
+
+                    <!-- لیست دروس منحصر به فرد -->
                     <div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
-                        @foreach($lessons as $lesson)
-
-                        @if(!in_array($lesson->id, $selectedLessons))
-                            <button
-                                wire:click="showLessonDetails('{{ $lesson->id }}')"
-                                class="text-right p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors duration-200">
-                                <span class="text-white">{{ $lesson->lesten_name }}</span>
-                                <span class="text-gray-400 text-sm mr-2">({{ $lesson->unit_count }} واحد)</span>
-                            </button>
-                        @endif
-                    @endforeach
-
+                        @foreach($uniqueLessons as $lesson)
+                            @if(!in_array($lesson->id, $selectedLessons))
+                                <!-- دکمه نمایش جزئیات هر درس -->
+                                <div
+                                    wire:click="showLessonDetails('{{ $lesson->lesten_name }}')"
+                                    class="bg-white/5 p-4 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                                    <h3 class="text-lg font-semibold text-white">{{ $lesson->lesten_name }}</h3>
+                                    <span class="text-gray-400 text-sm">({{ $lesson->unit_count }} واحد)</span>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
+
                     <!-- دکمه بستن مودال -->
                     <button
                         wire:click="$set('showLessonList', false)"
@@ -130,74 +134,83 @@
     @endif
 
     <!-- مودال نمایش جزئیات درس -->
-    <!-- این مودال در صورت کلیک روی نام درس در لیست دروس نمایش داده می‌شود -->
-    @if($showLessonDetails && $selectedLesson)
+    @if($showLessonDetails)
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <!-- پس‌زمینه تار -->
                 <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" wire:click="$set('showLessonDetails', false)"></div>
+
                 <!-- محتوای مودال -->
                 <div class="relative bg-gray-900 rounded-xl p-8 max-w-2xl w-full border border-gray-700">
-                    <h3 class="text-xl font-bold text-white mb-6">{{ $selectedLesson->lesten_name }}</h3>
-                    <!-- جزئیات درس -->
+                    <!-- عنوان درس -->
+                    <h3 class="text-xl font-bold text-white mb-6">{{ $selectedLessonName }}</h3>
+
+                    <!-- اطلاعات کلی درس -->
                     <div class="space-y-4">
-                        <!-- تعداد واحد -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">تعداد واحد:</span>
-                            <span class="text-white">{{ $selectedLesson->unit_count }}</span>
-                        </div>
-                        <!-- نام استاد -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">استاد:</span>
-                            <span class="text-white">{{ $selectedLesson->lesten_master }}</span>
-                        </div>
-                        <!-- ظرفیت کلاس -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">ظرفیت:</span>
-                            <span class="text-white">{{ $selectedLesson->registered_count }} / {{ $selectedLesson->capacity }}</span>
-                        </div>
-                        <!-- زمان کلاس -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">زمان کلاس:</span>
-                            <span class="text-white">
-                                @php
-                                    $schedule = json_decode($selectedLesson->class_schedule);
-                                    $days = implode('، ', $schedule->days);
-                                    echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
-                                @endphp
-                            </span>
-                        </div>
-                        <!-- محل کلاس -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">کلاس:</span>
-                            <span class="text-white">{{ $selectedLesson->classroom }}</span>
-                        </div>
-                        <!-- نوع درس -->
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">نوع درس:</span>
-                            <span class="text-white">{{ $selectedLesson->class_type === 'theoretical' ? 'تئوری' : 'عملی' }}</span>
-                        </div>
-                        <!-- پیش‌نیازها -->
-                        @if($selectedLesson->prerequisites)
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">پیش‌نیازها:</span>
-                                <span class="text-white">{{ $selectedLesson->prerequisites }}</span>
+                        <!-- لیست کلاس‌های این درس -->
+                        <div class="mt-6">
+                            <h4 class="text-lg font-semibold text-white mb-4">کلاس‌های موجود:</h4>
+                            <div class="space-y-4">
+                                @if($selectedLessonClasses && $selectedLessonClasses->isNotEmpty())
+                                    @foreach($selectedLessonClasses as $class)
+                                        <div class="bg-white/5 p-4 rounded-lg">
+                                            <!-- اطلاعات استاد -->
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-400">استاد:</span>
+                                                <span class="text-white">{{ $class->lesten_master }}</span>
+                                            </div>
+
+                                            <!-- اطلاعات ظرفیت -->
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-400">ظرفیت:</span>
+                                                <span class="text-white">{{ $class->registered_count }} / {{ $class->capacity }}</span>
+                                            </div>
+
+                                            <!-- اطلاعات زمان کلاس -->
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="text-gray-400">زمان کلاس:</span>
+                                                <span class="text-white">
+                                                    @php
+                                                        $schedule = json_decode($class->class_schedule);
+                                                        $days = implode('، ', $schedule->days);
+                                                        echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
+                                                    @endphp
+                                                </span>
+                                            </div>
+
+                                            <!-- اطلاعات محل کلاس -->
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-400">کلاس:</span>
+                                                <span class="text-white">{{ $class->classroom }}</span>
+                                            </div>
+
+                                            <!-- دکمه انتخاب این کلاس -->
+                                            <div class="mt-4 flex justify-end">
+                                                <button
+                                                    wire:click="toggleLesson({{ $class->id }})"
+                                                    class="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
+                                                    انتخاب این کلاس
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-center text-gray-400">
+                                        هیچ کلاسی برای این درس یافت نشد.
+                                    </div>
+                                @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
-                    <!-- دکمه‌های عملیات -->
-                    <div class="mt-8 flex justify-end space-x-4 space-x-reverse">
-                        <button
-                            wire:click="$set('showLessonDetails', false)"
-                            class="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200">
-                            انصراف
-                        </button>
-                        <button
-                            wire:click="toggleLesson({{ $selectedLesson->id }})"
-                            class="px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
-                            انتخاب درس
-                        </button>
-                    </div>
+
+                    <!-- دکمه بستن مودال -->
+                    <button
+                        wire:click="$set('showLessonDetails', false)"
+                        class="absolute top-4 left-4 text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
