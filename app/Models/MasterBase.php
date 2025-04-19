@@ -20,7 +20,8 @@ class MasterBase extends Model
     protected $fillable =[
         'master_id',
         'master_name',
-        'master_score'
+        'master_score',
+        'users-use'
     ];
 
     //کاست کردن فیلد ها

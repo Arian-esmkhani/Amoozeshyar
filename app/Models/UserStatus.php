@@ -31,7 +31,9 @@ class UserStatus extends Model
         'allowed_term',
         'student_status',
         'can_take_courses',
-        'academic_notes'
+        'academic_notes',
+        'term',
+        'lost_term'
     ];
 
     //کاست کردن فیلد ها

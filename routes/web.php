@@ -25,4 +25,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/amoozeshyar', [MainController::class, 'index'])->name('amoozeshyar');
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
     Route::get('/account', [AccountController::class, 'accountView'])->name('account');
+    Route::get('/score', [AccountController::class, 'scoreView'])->name('score');
 });
