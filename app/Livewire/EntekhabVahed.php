@@ -4,298 +4,198 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Services\AccountService;
+use App\Models\LessonStatus;
 
-/**
- * کلاس کامپوننت انتخاب واحد
- *
- * این کامپوننت برای مدیریت فرآیند انتخاب واحد دانشجویان استفاده می‌شود
- * شامل قابلیت‌های زیر است:
- * - نمایش لیست دروس قابل انتخاب
- * - انتخاب و حذف دروس
- * - محاسبه تعداد واحدها
- * - بررسی محدودیت‌های انتخاب واحد
- * - نمایش جزئیات هر درس
- * - ثبت نهایی دروس انتخاب شده
- */
+//کلاس ایجاد کامپننت انتخاب واحد
 class EntekhabVahed extends Component
 {
     //این متغیر برای سرویس کار با بخش مالی کار بر است
     protected $accountService;
 
-    //این کانستراکتور برای سرویس کار با بخش مالی کار بر است
-    public function __construct(AccountService $accountService)
-    {
-        $this->accountService = $accountService;
-    }
+    //این کانستراکتور برای وضغیت درس است
+    protected $lessonStatus;
 
-    /**
-     * حداقل واحد مجاز برای انتخاب
-     * @var int
-     * این مقدار از تنظیمات سیستم دریافت می‌شود
-     */
+    //اطلاعات کاربر
+    public $userData;
+
+    //حداقل واحد مجاز برای انتخاب
     public $minUnits;
 
-    /**
-     * حداکثر واحد مجاز برای انتخاب
-     * @var int
-     * این مقدار از تنظیمات سیستم دریافت می‌شود
-     */
+    //حداکثر واحد مجاز برای انتخاب
     public $maxUnits;
 
-    /**
-     * لیست تمام دروس ارائه شده در ترم جاری
-     * @var Collection
-     * شامل اطلاعات کامل هر درس مانند نام، استاد، زمان و ظرفیت
-     */
-    public $lessons;
-
+    //این متغیر برای ذخیره  کلاس ها است
     public $takeListen;
 
-    /**
-     * آرایه دروس انتخاب شده
-     * @var array
-     * هر عنصر این آرایه شامل شناسه (ID) درس انتخاب شده است
-     */
-    public $selectedLessons = [];
+    //این آرایه برای ذخیره ساعت کلاس ها است
+    public $classSchedules = [];
 
-    /**
-     * درس انتخاب شده برای نمایش جزئیات
-     * @var object|null
-     * شامل اطلاعات کامل درس انتخاب شده
-     */
-    public $selectedLesson = null;
+    // این متغیر برای ذخیره دروس اراعه شده انتخاب شده است
+    public $lessons;
 
-    /**
-     * تعداد کل واحدهای انتخاب شده
-     * @var int
-     * این متغیر به صورت خودکار با تغییر دروس انتخاب شده به‌روز می‌شود
-     */
-    public $totalUnits = 0;
+    // این متغیر برای ذخیره دروس انتخاب شده است تا از اسم تکراری در لیست دروس جلو گیری شود
+    public $uniqueLessons;
 
-    /**
-     * حزینه کل دروس
-     * @var int
-     * این متغیر به صورت خودکار با تغییر دروس انتخاب شده بروز می شود
-     */
-    public $totalMoney = 0;
+    //این متغیر برای ذخیره تعداد کل واحدهای انتخاب شده است
+    public $totalUnits;
 
-    /**
-     * وضعیت نمایش لیست دروس
-     * @var bool
-     * true: لیست دروس نمایش داده می‌شود
-     * false: لیست دروس مخفی است
-     */
+    //این متغیر برای ذخیره حزینه کل دروس است
+    public $totalMoney;
+
+    //این متغیر برای نمایش لیست دروس انتخاب شده است
     public $showLessonList = false;
 
-    /**
-     * وضعیت نمایش جزئیات درس
-     * @var bool
-     * true: جزئیات درس نمایش داده می‌شود
-     * false: جزئیات درس مخفی است
-     */
+    //این متغیر برای نمایش جزئیات دروس انتخاب شده است
     public $showLessonDetails = false;
 
-    public $groupedLessons = [];
-    public $selectedGroup = null;
+    //این متغیر برای ذخیره اسم درس از لیست دروس انتخاب شده است
+    public $lessonName = '';
 
-    /**
-     * لیست دروس منحصر به فرد (بدون تکرار)
-     * @var Collection
-     */
-    public $uniqueLessons = [];
+    //این متغیر برای ذخیره دروس است
+    public $selectedLesson = [];
 
-    /**
-     * لیست تمام کلاس‌های یک درس خاص
-     * @var Collection
-     */
-    public $selectedLessonClasses = [];
+    //این آرایه برای ذخیره دروس برای نمایش جزئیات انتخاب شده است
+    public $lessonSelected;
 
-    /**
-     * نام درس انتخاب شده برای نمایش جزئیات
-     * @var string
-     */
-    public $selectedLessonName = '';
-
-    /**
-     * متد مقداردهی اولیه کامپوننت
-     *
-     * این متد در زمان ایجاد کامپوننت اجرا می‌شود
-     * و مقادیر اولیه را تنظیم می‌کند
-     *
-     * @param array $data داده‌های مورد نیاز شامل:
-     *                    - minMax: محدوده مجاز واحدها
-     *                    - lessonOffered: لیست دروس ارائه شده
-     */
+    //این متد برای سوار کردن داده ها دیتا در متغیر هاست
     public function mount($data)
     {
+        // تزریق سرویس‌ها
+        $this->accountService = app(AccountService::class);
+        $this->lessonStatus = app(LessonStatus::class);
+
+        // مقداردهی داده‌های اولیه
         $this->minUnits = $data['minMax']->min_unit;
         $this->maxUnits = $data['minMax']->max_unit;
         $this->lessons = $data['lessonOffered'];
         $this->takeListen = $data['takeListen'];
-        $this->groupLessons();
-        $this->prepareUniqueLessons();
+        $this->userData = $data['userData'];
+        $this->UniqueLessons();
     }
 
-    protected function groupLessons()
-    {
-        $this->groupedLessons = $this->lessons->groupBy('lesten_name')->map(function ($group) {
-            return [
-                'name' => $group->first()->lesten_name,
-                'unit_count' => $group->first()->unit_count,
-                'classes' => $group->values()
-            ];
-        })->values();
-    }
-
-    /**
-     * آماده‌سازی لیست دروس منحصر به فرد
-     * این متد دروس تکراری را حذف می‌کند و فقط یک نمونه از هر درس را نگه می‌دارد
-     */
-    protected function prepareUniqueLessons()
+    //این متد دروس تکراری را حذف می‌کند و فقط یک نمونه از هر درس را نگه می‌دارد
+    protected function UniqueLessons()
     {
         $this->uniqueLessons = $this->lessons->unique('lesten_name');
     }
 
-    /**
-     * متد تغییر وضعیت انتخاب یک درس
-     *
-     * این متد در زمان کلیک روی دکمه انتخاب/حذف درس اجرا می‌شود
-     * و عملیات زیر را انجام می‌دهد:
-     * - بررسی محدودیت تعداد واحد
-     * - بررسی ظرفیت کلاس
-     * - اضافه یا حذف درس از لیست انتخاب شده
-     *
-     * @param int $lessonId شناسه درس مورد نظر
-     */
-    public function toggleLesson($lessonId)
+    //این متد برای نمایش جزئیات دروس انتخاب شده است
+    public function showLessonDetails($lessonName)
     {
-        //برسی اگر درس قبلا انتخاب شده باشد
-        if (in_array($lessonId, $this->selectedLessons)) {
-            $this->selectedLessons = array_diff($this->selectedLessons, [$lessonId]);
-            //اگر درس قبلا انتخاب نشده باشد
-        } else {
-            //درس را از لیست دروس انتخاب کنیم
-            $lesson = $this->lessons->firstWhere('id', $lessonId);
-            //محاسبه تعداد کل واحدهای انتخاب شده
-            $newTotalUnits = $this->totalUnits + $lesson->unit_count;
-            //بررسی اگر تعداد واحدهای انتخاب شده از حداکثر واحد مجاز بیشتر باشد
-            if ($newTotalUnits > $this->maxUnits) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود."
-                ]);
-                return;
-            }
+        $this->showLessonList = false;
+        $this->showLessonDetails = true;
+        $this->lessonName = $lessonName;
+        $this->lessonSelected = $this->lessons->where('lesten_name', $lessonName)->all();
+    }
 
-            //بررسی اگر ظرفیت کلاس تکمیل شده باشد
-            if ($lesson->capacity <= $lesson->registered_count) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "ظرفیت این درس تکمیل شده است."
-                ]);
-                return;
-            }
-            //درس را به لیست دروس انتخاب شده اضافه کنیم
-            $this->selectedLessons[] = $lessonId;
+    //این متد برای انتخاب درس است
+    public function takeLesson($lessonId)
+    {
+        //درس را از لیست دروس انتخاب کنیم
+        $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
+
+        //محاسبه تعداد کل واحدهای انتخاب شده
+        $newTotalUnits = $this->totalUnits + $lesson->unit_count;
+
+        //دیکدینگ زمان
+        $schedule = json_decode($lesson->class_schedule);
+
+        // استخراج روزها و زمان شروع و پایان
+        $days = implode('، ', $schedule->days);
+        $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
+
+
+        //بررسی اگر تعداد واحدهای انتخاب شده از حداکثر واحد مجاز بیشتر باشد
+        if ($newTotalUnits > $this->maxUnits) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود."
+            ]);
+            return;
         }
+
+        //بررسی اگر ظرفیت کلاس تکمیل شده باشد
+        if ($lesson->capacity <= $lesson->registered_count) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "ظرفیت این درس تکمیل شده است."
+            ]);
+            return;
+        }
+
+        if (in_array($days . ' ' . $timeRange, $this->classSchedules)) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "درس در زمان{$days} {$timeRange} انتخاب شده است."
+            ]);
+            return;
+        }
+
+
+        //درس را به لیست دروس انتخاب شده اضافه کنیم
+        $this->selectedLessons[] = $lessonId;
+
         //محاسبه تعداد کل واحدهای انتخاب شده
         $this->calculateTotalUnits();
 
         //محاسبه حزینه کل دروس
         $this->calculateTotalMoney();
 
+        //محاسبه زمان کلاس ها
+        $this->calculateTotalTime($lessonId, $days, $timeRange);
+
+        $lesson->registered_count++;
+
+        $this->lessonStatus->update([
+            'lesson_id' => $lessonId,
+            'student_name' => $this->userData->name,
+            'master_name' => $lesson->lesten_master,
+        ]);
+
         //جزئیات درس را مخفی کنیم
         $this->showLessonDetails = false;
     }
 
-    /**
-     * محاسبه تعداد کل واحدهای انتخاب شده
-     *
-     * این متد پس از هر تغییر در لیست دروس انتخاب شده
-     * تعداد کل واحدها را محاسبه می‌کند
-     */
+    //این متد برای حذف درس از لیست دروس انتخاب شده است
+    public function removeLesson($lessonId)
+    {
+        //حذف درس از لیست دروس انتخاب شده
+        $this->selectedLessons[] = array_diff($this->selectedLessons, [$lessonId]);
+
+        //محاسبه تعداد کل واحدهای انتخاب شده
+        $this->calculateTotalUnits();
+
+        //محاسبه حزینه کل دروس
+        $this->calculateTotalMoney();
+
+        //محاسبه زمان کلاس ها
+        $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
+            return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+        });
+
+        $this->lessons->firstWhere('lesten_id', $lessonId)->registered_count--;
+    }
+
+    //محاسبه تعداد کل واحدهای انتخاب شده
     protected function calculateTotalUnits()
     {
         //محاسبه تعداد کل واحدهای انتخاب شده
-        $this->totalUnits = $this->lessons->whereIn('id', $this->selectedLessons)->sum('unit_count');
+        $this->totalUnits = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('unit_count');
     }
 
-    /**
-     * محاسبه حزینه کل دروس
-     *
-     * این متد پس از هر تغییر در لیست دروس انتخاب شده
-     * هزینه کلوا برای دروس انتخاب شده را محاسبه می‌کند
-     */
+    //محاسبه حزینه کل دروس
     protected function calculateTotalMoney()
     {
-        $this->totalMoney = $this->lessons->whereIn('id', $this->selectedLessons)->sum('lesten_price');
+        $this->totalMoney = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('lesten_price');
     }
 
-    /**
-     * نمایش جزئیات یک درس
-     * این متد تمام کلاس‌های یک درس خاص را پیدا می‌کند
-     * @param string $lessonName نام درس مورد نظر
-     */
-    public function showLessonDetails($lessonName)
+    //محاسبه زمان کلاس ها
+    protected function calculateTotalTime($lessonId, $days, $timeRange)
     {
-        try {
-            // لاگ برای بررسی داده‌های ورودی
-            logger()->info('showLessonDetails called with:', [
-                'lessonName' => $lessonName,
-                'lessonsCount' => $this->lessons->count(),
-                'currentShowLessonList' => $this->showLessonList,
-                'currentShowLessonDetails' => $this->showLessonDetails
-            ]);
-
-            $this->selectedLessonName = $lessonName;
-            $this->selectedLessonClasses = $this->lessons->where('lesten_name', $lessonName)->values();
-
-            // لاگ برای بررسی نتیجه جستجو
-            logger()->info('Search results:', [
-                'selectedLessonClassesCount' => $this->selectedLessonClasses->count(),
-                'firstClass' => $this->selectedLessonClasses->first()
-            ]);
-
-            if ($this->selectedLessonClasses->isEmpty()) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => 'هیچ کلاسی برای این درس یافت نشد.'
-                ]);
-                return;
-            }
-
-            $this->showLessonList = false;
-            $this->showLessonDetails = true;
-
-            // لاگ برای بررسی وضعیت نهایی
-            logger()->info('Final state:', [
-                'showLessonList' => $this->showLessonList,
-                'showLessonDetails' => $this->showLessonDetails,
-                'selectedLessonName' => $this->selectedLessonName
-            ]);
-        } catch (\Exception $e) {
-            logger()->error('Error in showLessonDetails:', [
-                'message' => $e->getMessage(),
-                'lessonName' => $lessonName,
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            $this->dispatch('show-message', [
-                'type' => 'error',
-                'message' => 'خطا در نمایش جزئیات درس.'
-            ]);
-        }
+        $this->classSchedules[] = "{$lessonId} {$days} {$timeRange}";
     }
 
-    /**
-     * ثبت نهایی دروس انتخاب شده
-     *
-     * این متد در زمان کلیک روی دکمه ثبت نهایی اجرا می‌شود
-     * و عملیات زیر را انجام می‌دهد:
-     * - بررسی محدودیت‌های انتخاب واحد
-     * - ذخیره دروس انتخاب شده در دیتابیس
-     * - نمایش پیام موفقیت یا خطا
-     */
+    //این متد برای ثبت دروس انتخاب شده است
     public function submit()
     {
         if ($this->totalUnits < $this->minUnits) {

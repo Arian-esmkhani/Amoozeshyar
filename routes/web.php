@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\VahedController;
+use App\Http\Controllers\AccountController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Volt;
@@ -21,6 +22,7 @@ Route::middleware('guest')->group(function () {
 // مسیرهای نیازمند احراز هویت
 Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-    Route::get('/main', [MainController::class, 'index'])->name('main');
+    Route::get('/amoozeshyar', [MainController::class, 'index'])->name('amoozeshyar');
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
+    Route::get('/account', [AccountController::class, 'accountView'])->name('account');
 });

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserBase;
 use App\Models\UserData;
 use App\Services\CacheService;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +24,7 @@ class MainController extends Controller
             fn() => UserData::where('user_id', $user->id)->first()
         );
 
-        return view('main', [
+        return view('amoozeshyar', [
             'userData' => $userData,
             'userRole' => $user->role
         ]);

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\UserAccount;
-use Illuminate\Support\Facades\Auth;//استفاده از اوچیکیشن
+use Illuminate\Support\Facades\Auth; //استفاده از اوچیکیشن
 
 //با این کلاس سرویس کار با بخش مالی کار بر را میسازیم
 class AccountService
@@ -14,7 +14,7 @@ class AccountService
     //این کانستراکتور برای ذخیره حساب کاربر است
     public function __construct()
     {
-        $this->userAccount = UserAccount::where('user_id',Auth::user()->id)->first();
+        $this->userAccount = UserAccount::where('user_id', Auth::user()->id)->first();
     }
 
     //این متد برای وقتی است که به هزینه های کاربر اضافه می شود
@@ -24,11 +24,11 @@ class AccountService
             'debt' => $this->userAccount->debt + $money,
             'balance' => $this->userAccount->credit - $this->userAccount->debt
         ]);
-        if($this->userAccount->debt < 0){
+        if ($this->userAccount->debt < 0) {
             $this->userAccount->update([
                 'credit' => $this->userAccount->credit - $this->userAccount->debt,
                 'debt' => 0,
-                'balance' => $this->userAccount->credit
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
             ]);
         }
     }
