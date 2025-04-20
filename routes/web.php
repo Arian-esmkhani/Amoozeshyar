@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/amoozeshyar', [MainController::class, 'index'])->name('amoozeshyar');
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
+    Route::get('/hazve', [VahedController::class, 'hazve'])->name('hazve');
     Route::get('/account', [AccountController::class, 'accountView'])->name('account');
     Route::get('/score', [AccountController::class, 'scoreView'])->name('score');
+    Route::get('/nomre', [NomreController::class, 'nomre'])->name('nomre');
 });

@@ -19,6 +19,6 @@ class MainC extends Component
 
     public function render()
     {
-        return view('livewire.mainC');
+        return view('livewire.amoozeshyar');
     }
 }

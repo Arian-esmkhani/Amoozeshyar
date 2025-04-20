@@ -18,9 +18,12 @@ class LessonStatus extends Model
 
     //فیلد هایی که می توانند پر شوند
     protected $fillable = [
-        'master_id',
+        'lesson_id',
+        'lesson_name',
+        'student_name',
         'master_name',
-        'master_score'
+        'lesson_score',
+        'lesson_status'
     ];
 
     //کاست کردن فیلد ها

@@ -9,12 +9,8 @@ class Score extends Component
 {
     public $lessonMaster;
 
-    public $masterBase;
-
     public function mount($data)
     {
-        $this->masterBase = app(MasterBase::class);
-
         $this->lessonMaster = $data;
     }
 
@@ -29,5 +25,10 @@ class Score extends Component
             'users_save' => $newUsersSave,
             'master_score' => $newMasterScore
         ]);
+    }
+
+    public function render()
+    {
+        return view('livewire.ScoreView');
     }
 }

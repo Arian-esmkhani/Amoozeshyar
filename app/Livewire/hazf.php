@@ -12,7 +12,7 @@ class EntekhabVahed extends Component
     //این متغیر برای سرویس کار با بخش مالی کار بر است
     protected $accountService;
 
-    //این برای وضغیت درس است
+    //این  برای وضغیت درس است
     protected $lessonStatus;
 
     //اطلاعات کاربر
@@ -25,7 +25,7 @@ class EntekhabVahed extends Component
     public $maxUnits;
 
     //این متغیر برای ذخیره  کلاس ها است
-    public $userStatus;
+    public $takeListen = [];
 
     //این آرایه برای ذخیره ساعت کلاس ها است
     public $classSchedules = [];
@@ -38,9 +38,6 @@ class EntekhabVahed extends Component
 
     //این متغیر برای ذخیره تعداد کل واحدهای انتخاب شده است
     public $totalUnits;
-
-    //این متغیر برای ذخیره حزینه کل دروس است
-    public $totalMoney;
 
     //این متغیر برای نمایش لیست دروس انتخاب شده است
     public $showLessonList = false;
@@ -57,6 +54,8 @@ class EntekhabVahed extends Component
     //این آرایه برای ذخیره دروس برای نمایش جزئیات انتخاب شده است
     public $lessonSelected;
 
+    public $taked;
+
     //این متد برای سوار کردن داده ها دیتا در متغیر هاست
     public function mount($data)
     {
@@ -68,8 +67,9 @@ class EntekhabVahed extends Component
         $this->minUnits = $data['minMax']->min_unit;
         $this->maxUnits = $data['minMax']->max_unit;
         $this->lessons = $data['lessonOffered'];
+        $this->takeListen = $data['takeListen'];
         $this->userData = $data['userData'];
-        $this->userStatus = $data['userStatus'];
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
         $this->UniqueLessons();
     }
 
@@ -91,92 +91,78 @@ class EntekhabVahed extends Component
     //این متد برای انتخاب درس است
     public function actionLesson($lessonId)
     {
-        if (in_array($lessonId, $this->selectedLesson)){
-            $this->selectedLesson = array_diff($this->selectedLesson, [$lessonId]);
+        //درس را از لیست دروس انتخاب کنیم
+        $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
 
-                    //محاسبه زمان کلاس ها
-            $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
-            return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
-            });
-            $this->lessons->firstWhere('lesten_id', $lessonId)->registered_count--;
-        } else {
-                //درس را از لیست دروس انتخاب کنیم
-            $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
+        //محاسبه تعداد کل واحدهای انتخاب شده
+        $newTotalUnits = $this->totalUnits + $lesson->unit_count;
 
-            //محاسبه تعداد کل واحدهای انتخاب شده
-            $newTotalUnits = $this->totalUnits + $lesson->unit_count;
+        //دیکدینگ زمان
+        $schedule = json_decode($lesson->class_schedule);
 
-            //دیکدینگ زمان
-            $schedule = json_decode($lesson->class_schedule);
-
-            // استخراج روزها و زمان شروع و پایان
-            $days = implode('، ', $schedule->days);
-            $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
+        // استخراج روزها و زمان شروع و پایان
+        $days = implode('، ', $schedule->days);
+        $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
 
 
-            //بررسی اگر تعداد واحدهای انتخاب شده از حداکثر واحد مجاز بیشتر باشد
-            if ($newTotalUnits > $this->maxUnits) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود."
-                ]);
-                return;
-            }
-
-            //بررسی اگر ظرفیت کلاس تکمیل شده باشد
-            if ($lesson->capacity <= $lesson->registered_count) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "ظرفیت این درس تکمیل شده است."
-                ]);
-                return;
-            }
-
-            if (in_array($days . ' ' . $timeRange, $this->classSchedules)) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "درس در زمان{$days} {$timeRange} انتخاب شده است."
-                ]);
-                return;
-            }
-
-
-            //درس را به لیست دروس انتخاب شده اضافه کنیم
-            $this->selectedLessons[] = $lessonId;
-
-            //محاسبه تعداد کل واحدهای انتخاب شده
-            $this->calculateTotalUnits();
-
-            //محاسبه حزینه کل دروس
-            $this->calculateTotalMoney();
-
-            //محاسبه زمان کلاس ها
-            $this->calculateTotalTime($lessonId, $days, $timeRange);
-
-            $lesson->registered_count++;
-
-            $this->lessonStatus->create([
-                'lesson_id' => $lessonId,
-                'student_name' => $this->userData->name,
-                'master_name' => $lesson->lesten_master,
+        //بررسی اگر تعداد واحدهای انتخاب شده از حداکثر واحد مجاز بیشتر باشد
+        if ($newTotalUnits > $this->maxUnits) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود."
             ]);
-
-            //جزئیات درس را مخفی کنیم
-            $this->showLessonDetails = false;
+            return;
         }
+
+        //بررسی اگر ظرفیت کلاس تکمیل شده باشد
+        if ($lesson->capacity <= $lesson->registered_count) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "ظرفیت این درس تکمیل شده است."
+            ]);
+            return;
+        }
+
+        if (in_array($days . ' ' . $timeRange, $this->classSchedules)) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "درس در زمان{$days} {$timeRange} انتخاب شده است."
+            ]);
+            return;
+        }
+
+
+        //درس را به لیست دروس انتخاب شده اضافه کنیم
+        $this->takeListen[] = $lessonId;
+
+        //محاسبه تعداد کل واحدهای انتخاب شده
+        $this->calculateTotalUnits();
+
+        //محاسبه حزینه کل دروس
+        $this->accountService->userAdd($lesson->lesten_price);
+
+        //محاسبه زمان کلاس ها
+        $this->calculateTotalTime($lessonId, $days, $timeRange);
+
+        $lesson->registered_count++;
+
+        $this->lessonStatus->create([
+            'lesson_id' => $lessonId,
+            'student_name' => $this->userData->name,
+            'master_name' => $lesson->lesten_master,
+        ]);
+
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
+
+        //جزئیات درس را مخفی کنیم
+        $this->showLessonDetails = fals;
     }
 
     //محاسبه تعداد کل واحدهای انتخاب شده
     protected function calculateTotalUnits()
     {
         //محاسبه تعداد کل واحدهای انتخاب شده
-        $this->totalUnits = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('unit_count');
-    }
-
-    //محاسبه حزینه کل دروس
-    protected function calculateTotalMoney()
-    {
-        $this->totalMoney = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('lesten_price');
+        $this->totalUnits = $this->lessons->whereIn('lesten_id', $this->takeListen)->sum('unit_count');
     }
 
     //محاسبه زمان کلاس ها
@@ -206,18 +192,15 @@ class EntekhabVahed extends Component
 
         try {
             // دریافت وضعیت کاربر
-            $userStatus = $this -> userStatus;
+            $takeListen = $this->json_encode ($this -> takeListen);
 
             // تبدیل آرایه درس‌های انتخاب شده به JSON
-            $selectedLessonsJson = json_encode($this->selectedLessons);
+            $selectedLessonsJson = json_encode($this->takeListen);
 
             // به‌روزرسانی ستون take_listen
-            $userStatus->update([
+            $takeListen->update([
                 'take_listen' => $selectedLessonsJson
             ]);
-
-            //به‌روزرسانی بدهی کاربر
-            $this->accountService->UbdateDebt($this->totalMoney);
 
             $this->dispatch('show-message', [
                 'type' => 'success',
@@ -231,6 +214,44 @@ class EntekhabVahed extends Component
         }
     }
 
+    //از این جا به بعد برای حذف کردن در حذف و اضافه هستش
+    public function hazf($lessonId)
+    {
+        $this->takeListen = array_diff($this->takeListen, [$lessonId]);
+
+            //محاسبه زمان کلاس ها
+        $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
+        return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+        });
+            //درس را از لیست دروس انتخاب کنیم
+        $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
+
+        $this->lessons->registered_count--;
+
+            //محاسبه تعداد کل واحدهای انتخاب شده
+        $newTotalUnits = $this->totalUnits - $lesson->unit_count;
+
+        if ($newTotalUnits < $this->minUnits) {
+            $this->dispatch('show-message', [
+                'type' => 'error',
+                'message' => "با انتخاب این درس از کف مجاز واحد ({$this->minUnits}) کمتر می‌شود."
+            ]);
+        return;
+
+        $this->takeListen[] = $this->takeListen[] - $lessonId;
+
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
+
+        $this->accountService->ubdatCredit($lesson->lesten_price);
+
+        $this->lessonStatus->update([
+            'lesson_id' => $lessonId,
+            'student_name' => $this->userData->name,
+            'master_name' => $lesson->lesten_master,
+            'lesson_status' => "حذف"
+        ]);
+    }
+
     /**
      * رندر کردن ویو
      *
@@ -241,6 +262,6 @@ class EntekhabVahed extends Component
      */
     public function render()
     {
-        return view('livewire.entekhab-vahed');
+        return view('livewire.hazf');
     }
 }

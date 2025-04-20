@@ -18,12 +18,55 @@ class AccountService
     }
 
     //این متد برای وقتی است که به هزینه های کاربر اضافه می شود
-    public function UbdateDebt($money)
+    public function ubdateDebt($money)
     {
-        $this->userAccount->update([
-            'debt' => $this->userAccount->debt + $money,
-            'balance' => $this->userAccount->credit - $this->userAccount->debt
-        ]);
+        if($this->userAccount->credit >= $money) {
+            $this->userAccount->update([
+                'credit' => $this->userAccount->credit - $money,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }else{
+            $this->userAccount->update([
+                'debt' => $this->userAccount->debt + $money,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }
+        if ($this->userAccount->debt < 0) {
+            $this->userAccount->update([
+                'credit' => $this->userAccount->credit - $this->userAccount->debt,
+                'debt' => 0,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }
+    }
+
+    public function ubdatCredit($money) {
+        if($this->userAccount->debt >= $money){
+            $this->userAccount->update([
+                'debt' => $this->userAccount->debt - $money,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }else{
+            $this->userAccount->update([
+                'credit' =>$this->userAccount->credit - ($this->userAccount->debt - $money),
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }
+    }
+
+    public function userAdd($money)
+    {
+        if($this->userAccount->credit >= $money) {
+            $this->userAccount->update([
+                'credit' => $this->userAccount->credit - $money,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }else{
+            $this->userAccount->update([
+                'debt' => $this->userAccount->debt + $money,
+                'balance' => $this->userAccount->credit - $this->userAccount->debt
+            ]);
+        }
         if ($this->userAccount->debt < 0) {
             $this->userAccount->update([
                 'credit' => $this->userAccount->credit - $this->userAccount->debt,

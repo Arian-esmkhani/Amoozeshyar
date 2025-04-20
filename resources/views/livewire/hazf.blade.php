@@ -1,4 +1,67 @@
 <div>
+    <!-- بخش لیست دروس انتخاب شده -->
+    <!-- این بخش شامل جدول نمایش دروس انتخاب شده است -->
+    <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
+        <h3 class="text-lg font-bold text-white mb-4">دروس انتخاب شده</h3>
+        <div class="overflow-x-auto">
+            @if(count($taked))
+                <!-- جدول دروس انتخاب شده -->
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-right text-gray-400 border-b border-gray-700">
+                            <th class="py-3 px-5">نام درس</th>
+                            <th class="py-3 px-5">واحد</th>
+                            <th class="py-3 px-5">استاد</th>
+                            <th class="py-3 px-5">زمان</th>
+                            <th class="py-3 px-5">کلاس</th>
+                            <th class="py-3 px-5">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($taked as $lessonId)
+                            @php $lesson = $lessons->firstWhere('id', $lessonId); @endphp
+                            <tr class="text-right text-gray-300 border-b border-gray-700/50">
+                                <td class="py-3 px-5">{{ $lesson->lesten_name }}</td>
+                                <td class="py-3 px-5">{{ $lesson->unit_count }}</td>
+                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
+                                <td class="py-3 px-5">{{ $lesson->classroom }}</td>
+                                    @php
+                                        $schedule = json_decode($lesson->class_schedule);
+                                        $days = implode('، ', $schedule->days);
+                                        echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
+                                    @endphp
+                                </td>
+                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
+                                <td class="py-3 px-5">
+                                    <button
+                                        wire:click="hazf({{ $lesson->id }})"
+                                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200">
+                                        حذف
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <!-- پیام عدم وجود درس انتخاب شده -->
+                <p class="text-gray-400 text-center">هنوز درسی انتخاب نشده است</p>
+            @endif
+        </div>
+    </div>
+
+    <!-- دکمه ثبت نهایی -->
+    <!-- این دکمه فقط در صورت وجود درس انتخاب شده نمایش داده می‌شود -->
+    @if(count($taked))
+        <div class="mt-6 flex justify-end">
+            <button
+                wire:click="submit"
+                class="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
+                ثبت نهایی
+            </button>
+        </div>
+    @endif
+
     <!-- بخش اطلاعات دانشجو و محدوده واحد -->
     <!-- این بخش شامل کارت‌های نمایش اطلاعات محدوده واحد و دکمه انتخاب درس است -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -31,69 +94,6 @@
             </button>
         </div>
     </div>
-
-    <!-- بخش لیست دروس انتخاب شده -->
-    <!-- این بخش شامل جدول نمایش دروس انتخاب شده است -->
-    <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50">
-        <h3 class="text-lg font-bold text-white mb-4">دروس انتخاب شده</h3>
-        <div class="overflow-x-auto">
-            @if(count($selectedLesson))
-                <!-- جدول دروس انتخاب شده -->
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-right text-gray-400 border-b border-gray-700">
-                            <th class="py-3 px-5">نام درس</th>
-                            <th class="py-3 px-5">واحد</th>
-                            <th class="py-3 px-5">استاد</th>
-                            <th class="py-3 px-5">زمان</th>
-                            <th class="py-3 px-5">کلاس</th>
-                            <th class="py-3 px-5">حذف</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($selectedLesson as $lessonId)
-                            @php $lesson = $lessons->firstWhere('id', $lessonId); @endphp
-                            <tr class="text-right text-gray-300 border-b border-gray-700/50">
-                                <td class="py-3 px-5">{{ $lesson->lesten_name }}</td>
-                                <td class="py-3 px-5">{{ $lesson->unit_count }}</td>
-                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
-                                <td class="py-3 px-5">{{ $lesson->classroom }}</td>
-                                    @php
-                                        $schedule = json_decode($lesson->class_schedule);
-                                        $days = implode('، ', $schedule->days);
-                                        echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
-                                    @endphp
-                                </td>
-                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
-                                <td class="py-3 px-5">
-                                    <button
-                                        wire:click="actionLesson({{ $lesson->id }})"
-                                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200">
-                                        حذف
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <!-- پیام عدم وجود درس انتخاب شده -->
-                <p class="text-gray-400 text-center">هنوز درسی انتخاب نشده است</p>
-            @endif
-        </div>
-    </div>
-
-    <!-- دکمه ثبت نهایی -->
-    <!-- این دکمه فقط در صورت وجود درس انتخاب شده نمایش داده می‌شود -->
-    @if(count($selectedLesson))
-        <div class="mt-6 flex justify-end">
-            <button
-                wire:click="submit"
-                class="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200">
-                ثبت نهایی
-            </button>
-        </div>
-    @endif
 
     <!-- مودال نمایش لیست دروس -->
     @if($showLessonList)

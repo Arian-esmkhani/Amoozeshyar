@@ -21,7 +21,7 @@ class MasterBase extends Model
         'master_id',
         'master_name',
         'master_score',
-        'users-use'
+        'users-save'
     ];
 
     //کاست کردن فیلد ها
