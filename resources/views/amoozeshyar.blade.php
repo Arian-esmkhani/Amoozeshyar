@@ -8,6 +8,7 @@
     <title>آموزش یار</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black min-h-screen font-vazir">
     <div class="min-h-screen flex flex-col">
@@ -84,5 +85,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     @livewireScripts
+    <x-chat-button :isOnline="true" />
 </body>
 </html>
