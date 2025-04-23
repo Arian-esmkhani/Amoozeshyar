@@ -8,12 +8,12 @@
                 <div class="relative group">
                     <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-500 rounded-full blur opacity-30 group-hover:opacity-70 transition duration-1000"></div>
                     <div class="relative">
-                        <img src="/images/university-logo.png" alt="لوگوی دانشگاه" class="h-12 w-auto transform group-hover:scale-105 transition-transform duration-300">
+                        <img src="{{ asset('images/azad-logo.png') }}" alt="دانشگاه آزاد" class="h-19 w-auto transform group-hover:scale-105 transition-transform duration-300">
                     </div>
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                        آموزشیار
+                        دانشگاه آزاد
                     </h1>
                 </div>
             </div>
@@ -30,11 +30,10 @@
                     <span class="text-white">{{ $userData->name }}</span>
                 </div>
 
-                <!-- منوی کشویی پروفایل (اختیاری) -->
+                <!-- منوی کشویی پروفایل -->
                 <div class="hidden group-hover:block absolute left-0 mt-2 w-48 rounded-xl bg-white/10 backdrop-blur-lg border border-gray-700/50 shadow-2xl">
-                    <div class="py-2">
+                    <div class="py-1">
                         <a href="/profile" class="block px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors duration-200">پروفایل</a>
-                        <a href="/settings" class="block px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors duration-200">تنظیمات</a>
                     </div>
                 </div>
             </div>

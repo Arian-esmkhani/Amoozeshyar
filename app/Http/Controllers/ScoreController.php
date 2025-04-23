@@ -23,9 +23,10 @@ class AccountController extends Controller
     {
         $user = Auth::user();
         $take_listen = UserStatus::where('user_id', $user->id)->value('take_listen');
+        $term = UserStatus::where('user_id', $user->id)->value('term');
 
         // بررسی دسترسی ترم
-        $termAccess = TermAccess::where('term_number', 1)->first(); // فرض می‌کنیم ترم 1 است
+        $termAccess = TermAccess::where('term_number', $term)->first(); 
         if (!$termAccess || !$termAccess->isAccessible()) {
             return redirect()->back()->with('error', $termAccess ? $termAccess->message : 'شما در حال حاضر دسترسی به این ترم ندارید.');
         }

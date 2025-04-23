@@ -17,8 +17,8 @@
         </header>
 
         <main class="flex-grow container mx-auto px-4 pt-24 pb-12">
-            <livewire:mainC :userRole="$userRole"/>
-
+        <livewire:amoozeshyar :userRole="$userRole"/>
+        
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 backdrop-blur-sm border border-gray-800 shadow-2xl p-6">
                     <div class="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>

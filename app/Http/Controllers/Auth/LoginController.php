@@ -78,7 +78,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             // هدایت به صفحه اصلی یا صفحه‌ای که کاربر قصد دسترسی به آن را داشت
-            return redirect()->intended('/main');
+            return redirect()->intended('/amoozeshyar');
         } catch (ValidationException $e) {
             // در صورت خطا، برگشت به صفحه ورود با پیام خطا
             // و حفظ اطلاعات وارد شده توسط کاربر

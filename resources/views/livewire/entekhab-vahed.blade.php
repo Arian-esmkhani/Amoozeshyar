@@ -1,4 +1,13 @@
 <div>
+    <!-- بخش نمایش پیام‌های سیستم -->
+    @if (session()->has('message'))
+        <div class="mb-6">
+            <div class="p-4 rounded-lg text-center {{ session('type') === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20' }}">
+                <span>{{ session('message') }}</span>
+            </div>
+        </div>
+    @endif
+
     <!-- بخش اطلاعات دانشجو و محدوده واحد -->
     <!-- این بخش شامل کارت‌های نمایش اطلاعات محدوده واحد و دکمه انتخاب درس است -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -52,27 +61,41 @@
                     </thead>
                     <tbody>
                         @foreach($selectedLesson as $lessonId)
-                            @php $lesson = $lessons->firstWhere('id', $lessonId); @endphp
-                            <tr class="text-right text-gray-300 border-b border-gray-700/50">
-                                <td class="py-3 px-5">{{ $lesson->lesten_name }}</td>
-                                <td class="py-3 px-5">{{ $lesson->unit_count }}</td>
-                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
-                                <td class="py-3 px-5">{{ $lesson->classroom }}</td>
-                                    @php
-                                        $schedule = json_decode($lesson->class_schedule);
-                                        $days = implode('، ', $schedule->days);
-                                        echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
-                                    @endphp
-                                </td>
-                                <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
-                                <td class="py-3 px-5">
-                                    <button
-                                        wire:click="actionLesson({{ $lesson->id }})"
-                                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200">
-                                        حذف
-                                    </button>
-                                </td>
-                            </tr>
+                            @php
+                                // Find the lesson object. Handle case where lesson might not be found in current $lessons collection.
+                                $lesson = $lessons->firstWhere('id', $lessonId);
+                            @endphp
+                            @if($lesson)
+                                <tr class="text-right text-gray-300 border-b border-gray-700/50">
+                                    <td class="py-3 px-5">{{ $lesson->lesten_name }}</td>
+                                    <td class="py-3 px-5">{{ $lesson->unit_count }}</td>
+                                    <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
+                                    <td class="py-3 px-5">
+                                        @php
+                                            // Safely decode JSON and display schedule
+                                            try {
+                                                $schedule = json_decode($lesson->class_schedule, false, 512, JSON_THROW_ON_ERROR);
+                                                if (isset($schedule->days) && isset($schedule->time->start) && isset($schedule->time->end)) {
+                                                    $days = implode('، ', (array)$schedule->days);
+                                                    echo "{$days} {$schedule->time->start} - {$schedule->time->end}";
+                                                } else {
+                                                    echo 'نامشخص';
+                                                }
+                                            } catch (\JsonException $e) {
+                                                echo 'خطا در زمان';
+                                            }
+                                        @endphp
+                                    </td>
+                                    <td class="py-3 px-5">{{ $lesson->classroom }}</td>
+                                    <td class="py-3 px-5">
+                                        <button
+                                            wire:click="actionLesson({{ $lesson->id }})"
+                                            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200">
+                                            حذف
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -84,7 +107,6 @@
     </div>
 
     <!-- دکمه ثبت نهایی -->
-    <!-- این دکمه فقط در صورت وجود درس انتخاب شده نمایش داده می‌شود -->
     @if(count($selectedLesson))
         <div class="mt-6 flex justify-end">
             <button
@@ -112,12 +134,13 @@
                         @foreach($uniqueLessons as $lesson)
                             @if(!in_array($lesson->id, $selectedLesson))
                                 <!-- دکمه نمایش جزئیات هر درس -->
-                                <div
-                                    wire:click="showLessonDetails('{{ $lesson->lesten_name }}')"
-                                    class="bg-white/5 p-4 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                                <button
+                                    type="button"
+                                    x-on:click="$dispatch('show-lesson-details', { lessonName: '{{ $lesson->lesten_name }}' })"
+                                    class="w-full text-right bg-white/5 p-4 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer">
                                     <h3 class="text-lg font-semibold text-white">{{ $lesson->lesten_name }}</h3>
                                     <span class="text-gray-400 text-sm">({{ $lesson->unit_count }} واحد)</span>
-                                </div>
+                                </button>
                             @endif
                         @endforeach
                     </div>
@@ -241,24 +264,4 @@
             </div>
         </div>
     @endif
-
-    <!-- بخش نمایش پیام‌های سیستم -->
-    <!-- این بخش برای نمایش پیام‌های موفقیت و خطا استفاده می‌شود -->
-    <div
-        x-data="{ show: false, message: '', type: '' }"
-        x-show="show"
-        x-transition
-        @show-message.window="
-            show = true;
-            message = $event.detail.message;
-            type = $event.detail.type;
-            setTimeout(() => show = false, 3000);
-        "
-        class="fixed bottom-4 right-4 p-4 rounded-lg"
-        :class="{
-            'bg-green-500': type === 'success',
-            'bg-red-500': type === 'error'
-        }">
-        <span x-text="message" class="text-white"></span>
-    </div>
 </div>

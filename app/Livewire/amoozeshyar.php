@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 
-class MainC extends Component
+class Amoozeshyar extends Component
 {
     public $userRole;
     public $isStudent = false;

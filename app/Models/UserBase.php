@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;//استفاده از حس فکتوری
-use Illuminate\Database\Eloquent\SoftDeletes;//استفاده از حذف امن
-use Illuminate\Foundation\Auth\User as Authenticatable;//استفاده از سیستم احراز هویت
-use Illuminate\Notifications\Notifiable;//استفاده  از کلاس اعلان
-use Laravel\Sanctum\HasApiTokens;//استفاده از هس پی توکن
+use Illuminate\Database\Eloquent\Factories\HasFactory; //استفاده از حس فکتوری
+use Illuminate\Database\Eloquent\SoftDeletes; //استفاده از حذف امن
+use Illuminate\Foundation\Auth\User as Authenticatable; //استفاده از سیستم احراز هویت
+use Illuminate\Notifications\Notifiable; //استفاده  از کلاس اعلان
+use Laravel\Sanctum\HasApiTokens; //استفاده از هس پی توکن
 
 /**
  * تعریف یک کلاس برای کار با مدل یوزر بیس
@@ -66,5 +66,13 @@ class UserBase extends Authenticatable
     public function isStudent(): bool
     {
         return $this->role === self::ROLE_STUDENT;
+    }
+
+    /**
+     * رابطه با جدول وضعیت کاربر
+     */
+    public function userStatus()
+    {
+        return $this->hasOne(UserStatus::class, 'user_id');
     }
 }

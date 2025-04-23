@@ -14,7 +14,7 @@ class LessonStatus extends Model
     use SoftDeletes;
 
     //ارتباط با تیبل وضعیت درس
-    protected $table = 'master_base';
+    protected $table = 'lesson_status';
 
     //فیلد هایی که می توانند پر شوند
     protected $fillable = [

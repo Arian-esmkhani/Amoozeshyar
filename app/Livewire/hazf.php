@@ -69,7 +69,7 @@ class EntekhabVahed extends Component
         $this->lessons = $data['lessonOffered'];
         $this->takeListen = $data['takeListen'];
         $this->userData = $data['userData'];
-        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id, $this->takeListen)->get();
         $this->UniqueLessons();
     }
 
@@ -152,10 +152,10 @@ class EntekhabVahed extends Component
             'master_name' => $lesson->lesten_master,
         ]);
 
-        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id, $this->takeListen)->get();
 
         //جزئیات درس را مخفی کنیم
-        $this->showLessonDetails = fals;
+        $this->showLessonDetails = false;
     }
 
     //محاسبه تعداد کل واحدهای انتخاب شده
@@ -192,7 +192,7 @@ class EntekhabVahed extends Component
 
         try {
             // دریافت وضعیت کاربر
-            $takeListen = $this->json_encode ($this -> takeListen);
+            $takeListen = $this->json_encode($this->takeListen);
 
             // تبدیل آرایه درس‌های انتخاب شده به JSON
             $selectedLessonsJson = json_encode($this->takeListen);
@@ -219,16 +219,17 @@ class EntekhabVahed extends Component
     {
         $this->takeListen = array_diff($this->takeListen, [$lessonId]);
 
-            //محاسبه زمان کلاس ها
+        //محاسبه زمان کلاس ها
         $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
-        return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+            return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
         });
-            //درس را از لیست دروس انتخاب کنیم
+
+        //درس را از لیست دروس انتخاب کنیم
         $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
 
         $this->lessons->registered_count--;
 
-            //محاسبه تعداد کل واحدهای انتخاب شده
+        //محاسبه تعداد کل واحدهای انتخاب شده
         $newTotalUnits = $this->totalUnits - $lesson->unit_count;
 
         if ($newTotalUnits < $this->minUnits) {
@@ -236,11 +237,13 @@ class EntekhabVahed extends Component
                 'type' => 'error',
                 'message' => "با انتخاب این درس از کف مجاز واحد ({$this->minUnits}) کمتر می‌شود."
             ]);
-        return;
+            return;
+        }
 
-        $this->takeListen[] = $this->takeListen[] - $lessonId;
+        // به‌روزرسانی تعداد کل واحدها
+        $this->totalUnits = $newTotalUnits;
 
-        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id , $this->takeListen)->get();
+        $this->taked = $this->lessons->WherejsonContains($this->lessons->lesten_id, $this->takeListen)->get();
 
         $this->accountService->ubdatCredit($lesson->lesten_price);
 

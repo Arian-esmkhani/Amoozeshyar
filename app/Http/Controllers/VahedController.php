@@ -36,7 +36,7 @@ class VahedController extends Controller
 
                 $minMax = UserStatus::where('user_id', $user->id)->select('min_unit', 'max_unit')->first();
                 $userData = UserData::where('user_id', $user->id)->first();
-                $userStatus = UserStatus::whereJsonContains('user_id', $user->id)->first();
+                $userStatus = UserStatus::where('user_id', $user->id)->first();
 
                 // دریافت درس‌های پیشنهادی
                 $lessonOffered = LessonOffered::where(function ($query) use ($studentMajor) {
@@ -92,7 +92,7 @@ class VahedController extends Controller
 
         $studentMajor = StudentData::where('user_id', $user->id)->value('major');
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
-        $passedLesson = UserGpa::whereJsonContains('user_id', $user->id)->value('passed_listen');
+        $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
         $data = $this->cacheService->remember(
             "lesson_offered_{$user->id}",
@@ -149,6 +149,6 @@ class VahedController extends Controller
             }
         );
 
-        return view('entekhab-vahed', compact('data'));
+        return view('hazf', compact('data'));
     }
 }

@@ -23,13 +23,12 @@ class profilController extends Controller
     public function dashbord()
     {
         $user = Auth::user();
-        $takeLesson = UserStatus::whereJsonContains('user_id', $user->id)->value('take_listen');
+        $takeLesson = UserStatus::where('user_id', $user->id)->value('take_listen');
 
         $data = $this->cacheService->remember(
             "user_profil_{$user->id}",
             360,
-            function () use ($user, $takeLesson)
-            {
+            function () use ($user, $takeLesson) {
                 $userStatus = UserStatus::where('user_id', $user->id)->select('term', 'passed_units')->first();
                 $studentData = StudentData::where('user_id', $user->id)->select('degree_level', 'major')->first();
                 $userGpa = UserGpa::where('user_id', $user->id)->select('last_gpa', 'cumulative_gpa')->first();

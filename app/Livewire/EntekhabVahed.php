@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Services\AccountService;
 use App\Models\LessonStatus;
+use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Auth;
 
 //کلاس ایجاد کامپننت انتخاب واحد
 class EntekhabVahed extends Component
@@ -69,8 +71,47 @@ class EntekhabVahed extends Component
         $this->maxUnits = $data['minMax']->max_unit;
         $this->lessons = $data['lessonOffered'];
         $this->userData = $data['userData'];
+        // Note: $data['userStatus'] is assigned below after loading selected lessons
+
+        // Load previously selected lessons for the current user
+        // Ensure userData is available before querying
+        if ($this->userData) {
+            $this->selectedLesson = $this->lessonStatus
+                ->where('student_name', $this->userData->name) // Consider using user ID if available
+                ->pluck('lesson_id')
+                ->toArray();
+
+            // Calculate initial totals and schedules based on loaded lessons
+            $this->calculateTotalUnits();
+            $this->calculateTotalMoney();
+            $this->populateInitialSchedules();
+        }
+
+        // This was originally passed in $data, ensure it's still relevant or loaded differently if needed
         $this->userStatus = $data['userStatus'];
+
         $this->UniqueLessons();
+    }
+
+    // Helper method to populate initial class schedules based on $selectedLesson
+    protected function populateInitialSchedules()
+    {
+        $this->classSchedules = [];
+        foreach ($this->selectedLesson as $lessonId) {
+            $lesson = $this->lessons->firstWhere('id', $lessonId);
+            if ($lesson && isset($lesson->class_schedule)) {
+                try {
+                    $schedule = json_decode($lesson->class_schedule, false, 512, JSON_THROW_ON_ERROR);
+                    if (isset($schedule->days) && isset($schedule->time->start) && isset($schedule->time->end)) {
+                        $days = implode('، ', (array)$schedule->days);
+                        $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
+                        $this->calculateTotalTime($lessonId, $days, $timeRange); // Use existing method
+                    }
+                } catch (\JsonException $e) {
+                    // Handle or log error if necessary
+                }
+            }
+        }
     }
 
     //این متد دروس تکراری را حذف می‌کند و فقط یک نمونه از هر درس را نگه می‌دارد
@@ -80,6 +121,7 @@ class EntekhabVahed extends Component
     }
 
     //این متد برای نمایش جزئیات دروس انتخاب شده است
+    #[On('show-lesson-details')]
     public function showLessonDetails($lessonName)
     {
         $this->showLessonList = false;
@@ -91,17 +133,47 @@ class EntekhabVahed extends Component
     //این متد برای انتخاب درس است
     public function actionLesson($lessonId)
     {
-        if (in_array($lessonId, $this->selectedLesson)){
+        // Ensure lessonStatus is initialized (Workaround for potential state loss)
+        if (is_null($this->lessonStatus)) {
+            $this->lessonStatus = app(LessonStatus::class);
+        }
+
+        if (in_array($lessonId, $this->selectedLesson)) {
             $this->selectedLesson = array_diff($this->selectedLesson, [$lessonId]);
 
-                    //محاسبه زمان کلاس ها
+            // Recalculate totals after removing lesson
+            $this->calculateTotalUnits();
+            $this->calculateTotalMoney();
+
+            //محاسبه زمان کلاس ها
             $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
-            return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+                return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
             });
-            $this->lessons->firstWhere('lesten_id', $lessonId)->registered_count--;
+
+            // Delete the corresponding LessonStatus record
+            $this->lessonStatus
+                ->where('lesson_id', $lessonId)
+                ->where('student_name', $this->userData->name)
+                ->delete();
+
+            // Decrement registered count (assuming $lessons contains appropriate objects)
+            // Consider refactoring this if $lessons doesn't hold persistent models
+            $lesson = $this->lessons->firstWhere('id', $lessonId);
+            if ($lesson) {
+                $lesson->registered_count = max(0, $lesson->registered_count - 1); // Prevent going below zero
+            }
         } else {
-                //درس را از لیست دروس انتخاب کنیم
-            $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
+            //درس را از لیست دروس انتخاب کنیم
+            $lesson = $this->lessons->firstWhere('id', $lessonId); // Assuming $lessonId is the primary key 'id'
+
+            // Return early if lesson not found (robustness)
+            if (!$lesson) {
+                $this->dispatch('show-message', [
+                    'type' => 'error',
+                    'message' => "درس مورد نظر یافت نشد."
+                ]);
+                return;
+            }
 
             //محاسبه تعداد کل واحدهای انتخاب شده
             $newTotalUnits = $this->totalUnits + $lesson->unit_count;
@@ -142,7 +214,7 @@ class EntekhabVahed extends Component
 
 
             //درس را به لیست دروس انتخاب شده اضافه کنیم
-            $this->selectedLessons[] = $lessonId;
+            $this->selectedLesson[] = $lessonId;
 
             //محاسبه تعداد کل واحدهای انتخاب شده
             $this->calculateTotalUnits();
@@ -157,6 +229,7 @@ class EntekhabVahed extends Component
 
             $this->lessonStatus->create([
                 'lesson_id' => $lessonId,
+                'lesson_name' => $lesson->lesten_name,
                 'student_name' => $this->userData->name,
                 'master_name' => $lesson->lesten_master,
             ]);
@@ -170,13 +243,13 @@ class EntekhabVahed extends Component
     protected function calculateTotalUnits()
     {
         //محاسبه تعداد کل واحدهای انتخاب شده
-        $this->totalUnits = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('unit_count');
+        $this->totalUnits = $this->lessons->whereIn('id', $this->selectedLesson)->sum('unit_count');
     }
 
     //محاسبه حزینه کل دروس
     protected function calculateTotalMoney()
     {
-        $this->totalMoney = $this->lessons->whereIn('lesten_id', $this->selectedLessons)->sum('lesten_price');
+        $this->totalMoney = $this->lessons->whereIn('id', $this->selectedLesson)->sum('lesten_price');
     }
 
     //محاسبه زمان کلاس ها
@@ -188,46 +261,49 @@ class EntekhabVahed extends Component
     //این متد برای ثبت دروس انتخاب شده است
     public function submit()
     {
+        //  بررسی حداقل واحد
         if ($this->totalUnits < $this->minUnits) {
-            $this->dispatch('show-message', [
-                'type' => 'error',
-                'message' => "حداقل {$this->minUnits} واحد باید انتخاب کنید."
-            ]);
+            session()->flash('message', "حداقل {$this->minUnits} واحد باید انتخاب کنید.");
+            session()->flash('type', 'error');
             return;
         }
 
+        //  بررسی حداکثر واحد
         if ($this->totalUnits > $this->maxUnits) {
-            $this->dispatch('show-message', [
-                'type' => 'error',
-                'message' => "حداکثر {$this->maxUnits} واحد می‌توانید انتخاب کنید."
-            ]);
+            session()->flash('message', "حداکثر {$this->maxUnits} واحد می‌توانید انتخاب کنید.");
+            session()->flash('type', 'error');
             return;
         }
 
         try {
-            // دریافت وضعیت کاربر
-            $userStatus = $this -> userStatus;
+            // Ensure services are initialized (Workaround for potential state loss)
+            if (is_null($this->accountService)) {
+                $this->accountService = app(AccountService::class);
+            }
 
-            // تبدیل آرایه درس‌های انتخاب شده به JSON
-            $selectedLessonsJson = json_encode($this->selectedLessons);
+            $userStatus = Auth::user()->userStatus()->first();
+            if (!$userStatus) {
+                session()->flash('message', 'وضعیت کاربر یافت نشد.');
+                session()->flash('type', 'error');
+                return;
+            }
 
-            // به‌روزرسانی ستون take_listen
+            //  تبدیل آرایه درس‌های انتخاب شده به JSON
+            $selectedLessonsJson = json_encode($this->selectedLesson);
+
+            //  به‌روزرسانی ستون take_listen در userStatus
             $userStatus->update([
                 'take_listen' => $selectedLessonsJson
             ]);
 
-            //به‌روزرسانی بدهی کاربر
-            $this->accountService->UbdateDebt($this->totalMoney);
+            //  به‌روزرسانی بدهی کاربر
+            $this->accountService->ubdateDebt($this->totalMoney);
 
-            $this->dispatch('show-message', [
-                'type' => 'success',
-                'message' => 'دروس با موفقیت ثبت شدند.'
-            ]);
+            session()->flash('message', 'دروس با موفقیت ثبت شدند.');
+            session()->flash('type', 'success');
         } catch (\Exception $e) {
-            $this->dispatch('show-message', [
-                'type' => 'error',
-                'message' => 'خطا در ثبت دروس: ' . $e->getMessage()
-            ]);
+            session()->flash('message', 'خطا در ثبت دروس: ' . $e->getMessage());
+            session()->flash('type', 'error');
         }
     }
 
