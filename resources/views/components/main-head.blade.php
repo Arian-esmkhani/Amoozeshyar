@@ -20,7 +20,7 @@
 
             <!-- پروفایل کاربر -->
             <div class="relative group">
-                <div class="flex items-center space-x-3 space-x-reverse">
+                <a href="/profil" class="flex items-center space-x-3 space-x-reverse">
                     <div class="relative">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg transform group-hover:scale-105 transition-transform duration-300">
                             {{ substr($userData->name, 0, 1) }}
@@ -28,12 +28,12 @@
                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                     </div>
                     <span class="text-white">{{ $userData->name }}</span>
-                </div>
+                </a>
 
                 <!-- منوی کشویی پروفایل -->
                 <div class="hidden group-hover:block absolute left-0 mt-2 w-48 rounded-xl bg-white/10 backdrop-blur-lg border border-gray-700/50 shadow-2xl">
                     <div class="py-1">
-                        <a href="/profile" class="block px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors duration-200">پروفایل</a>
+                        <a href="/profil" class="block px-4 py-2 text-gray-300 hover:bg-white/10 transition-colors duration-200">پروفایل</a>
                     </div>
                 </div>
             </div>

@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پروفایل دانشجو</title>
+    <title>پروفایل دانشجو - آموزشیار</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdn.fontcdn.ir/Font/Persian/Vazir/Vazir.css">
+    <style>
+        body {
+            font-family: 'Vazir', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div x-data="{ isOpen: false }" class="min-h-screen">
-        <!-- هدر -->
-        <header class="bg-white shadow-sm">
+<body class="antialiased font-vazir">
+    <div class="min-h-screen bg-gradient-to-br from-gray-900 to-black">
+        <!-- هدر قبلی (لوگو دانشگاه و خروج) -->
+        <header class="bg-black/30 backdrop-blur-md shadow-md sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
                     <!-- لوگو دانشگاه -->
                     <div class="flex-shrink-0">
-                        <img class="h-12 w-auto" src="{{ asset('images/university-logo.png') }}" alt="لوگو دانشگاه">
+                        <img class="h-10 sm:h-12 w-auto" src="{{ asset('images/azad-logo.png') }}" alt="لوگو دانشگاه آزاد">
                     </div>
 
                     <!-- دکمه خروج -->
                     <div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <button type="submit"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-red-500 transition-colors duration-200">
+                                <svg class="w-5 h-5 ml-2 rtl:mr-2 rtl:ml-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                                 خروج
                             </button>
                         </form>
@@ -30,63 +38,76 @@
             </div>
         </header>
 
-        <!-- محتوای اصلی -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- محتوای اصلی با عرض بیشتر -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
             <!-- کارت اطلاعات شخصی -->
-            <div class="bg-white shadow rounded-lg overflow-hidden mb-8">
-                <div class="px-4 py-5 sm:px-6">
-                    <div class="flex items-center space-x-4 rtl:space-x-reverse">
+            <div class="bg-white/5 backdrop-blur-lg rounded-3xl overflow-hidden mb-10 border border-gray-700/50 shadow-xl transform transition-all hover:scale-[1.01]">
+                <div class="p-6 sm:p-8">
+                    <div class="flex flex-col sm:flex-row items-center space-y-5 sm:space-y-0 sm:space-x-6 rtl:sm:space-x-reverse">
                         <div class="flex-shrink-0">
-                            <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                                <span class="text-2xl text-gray-500">{{ substr($data['userData'], 0, 1) }}</span>
+                            <div class="relative group">
+                                <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-500 rounded-full blur-md opacity-60 group-hover:opacity-80 transition duration-300 animate-pulse"></div>
+                                <div class="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-tl from-gray-800 to-gray-900 flex items-center justify-center border-2 border-gray-600 shadow-lg">
+                                    <span class="text-3xl sm:text-4xl font-bold text-white">{{ substr($data['userData']?->name ?? '?', 0, 1) }}</span>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                {{ $data['userData'] }}
+                        <div class="text-center sm:text-right">
+                            <h3 class="text-2xl sm:text-3xl font-bold text-white">
+                                {{ $data['userData']?->name ?? 'نامشخص' }}
                             </h3>
-                            <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                                {{ $data['studentData']->major }}
+                            <p class="mt-1 text-lg text-indigo-400 font-medium">
+                                {{ $data['studentData']?->major ?? 'نامشخص' }}
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- جدول اطلاعات تحصیلی -->
-            <div class="bg-white shadow rounded-lg overflow-hidden mb-8">
-                <div class="px-4 py-5 sm:px-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">اطلاعات تحصیلی</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ترم فعلی</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">واحدهای پاس شده</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">مقطع</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">معدل ترم پیش</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">معدل کل</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $data['userStatus']->term }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $data['userStatus']->passed_units }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $data['studentData']->degree_level }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $data['userGpa']->last_gpa }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $data['userGpa']->cumulative_gpa }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- بخش اطلاعات تحصیلی با استایل جدید -->
+            <div class="bg-white/5 backdrop-blur-lg rounded-3xl overflow-hidden mb-10 border border-gray-700/50 shadow-lg">
+                <div class="px-6 py-5 border-b border-gray-700/50">
+                    <h3 class="text-xl leading-6 font-semibold text-white">اطلاعات تحصیلی</h3>
+                </div>
+                <div class="px-6 py-8">
+                    <dl class="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+                        <div class="sm:col-span-1 text-center sm:text-right">
+                            <dt class="text-sm font-medium text-gray-400">ترم فعلی</dt>
+                            <dd class="mt-1 text-2xl font-semibold text-white">{{ $data['userStatus']?->term ?? '-' }}</dd>
+                        </div>
+                        <div class="sm:col-span-1 text-center sm:text-right">
+                            <dt class="text-sm font-medium text-gray-400">واحدهای پاس شده</dt>
+                            <dd class="mt-1 text-2xl font-semibold text-white">{{ $data['userStatus']?->passed_units ?? '-' }}</dd>
+                        </div>
+                        <div class="sm:col-span-1 text-center sm:text-right">
+                            <dt class="text-sm font-medium text-gray-400">مقطع</dt>
+                            <dd class="mt-1 text-2xl font-semibold text-white">{{ $data['studentData']?->degree_level ?? '-' }}</dd>
+                        </div>
+                        <div class="sm:col-span-1 text-center sm:text-right">
+                            <dt class="text-sm font-medium text-gray-400">معدل ترم پیش</dt>
+                            <dd class="mt-1 text-2xl font-semibold text-white">{{ $data['userGpa']?->last_gpa ?? '-' }}</dd>
+                        </div>
+                        <div class="sm:col-span-1 text-center sm:text-right">
+                            <dt class="text-sm font-medium text-gray-400">معدل کل</dt>
+                            <dd class="mt-1 text-2xl font-semibold text-white">{{ $data['userGpa']?->cumulative_gpa ?? '-' }}</dd>
+                        </div>
+                    </dl>
                 </div>
             </div>
 
-            <!-- کامپوننت Livewire -->
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-                <livewire:profil :data="$data"/>
+            <!-- کامپوننت Livewire Volt برای نمایش دروس -->
+            <div class="bg-transparent rounded-3xl overflow-hidden">
+                 <livewire:profil :data="$data" />
             </div>
+
         </main>
+
+        <footer class="bg-gradient-to-t from-black/50 to-gray-900/50 text-white py-8 mt-16 backdrop-blur-sm border-t border-gray-700/50">
+            <div class="container mx-auto px-4">
+                <x-footer/>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

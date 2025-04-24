@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;//فرا خوانی مدل
-use Illuminate\Database\Eloquent\SoftDeletes;//فرا خوانی سافت دیلیت
+use Illuminate\Database\Eloquent\Model; //فرا خوانی مدل
+use Illuminate\Database\Eloquent\SoftDeletes; //فرا خوانی سافت دیلیت
 
 /**
  * کلاسی برای تعریف مدل بیس استاد
@@ -17,14 +17,14 @@ class MasterBase extends Model
     protected $table = 'master_base';
 
     //فیلد هایی که می توانند پر شوند
-    protected $fillable =[
+    protected $fillable = [
         'master_id',
         'master_name',
         'master_score',
-        'users-save'
+        'users-save',
+        'student-id'
     ];
 
     //کاست کردن فیلد ها
-    protected $casts = [
-    ];
+    protected $casts = [];
 }

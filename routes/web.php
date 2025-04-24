@@ -6,6 +6,7 @@ use App\Http\Controllers\VahedController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\NomreController;
+use App\Http\Controllers\profilController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Volt;
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [AccountController::class, 'accountView'])->name('account');
     Route::get('/score', [ScoreController::class, 'scoreView'])->name('score');
     Route::get('/nomre', [NomreController::class, 'nomre'])->name('nomre');
+    Route::get('/profil', [profilController::class, 'dashbord'])->name('profil');
 });
 
 Filament::serving(function () {

@@ -71,9 +71,9 @@ $deposit = function () {
                                     {{-- Access data using the state variable --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ $data['userData']->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ $data['userAccount']->payment_status }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->debt) }} ریال</td> {{-- Added number_format --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->credit) }} ریال</td> {{-- Added number_format --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->balance) }} ریال</td> {{-- Added number_format --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->debt) }} </td> {{-- Added number_format --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->credit) }} </td> {{-- Added number_format --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ number_format($data['userAccount']->balance) }} </td> {{-- Added number_format --}}
                                 </tr>
                             </tbody>
                         </table>
