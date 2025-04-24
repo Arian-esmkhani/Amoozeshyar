@@ -20,8 +20,17 @@
                 <div class="flex justify-between items-center py-4">
                     <!-- لوگو دانشگاه -->
                     <div class="flex-shrink-0">
-                        <img class="h-10 sm:h-12 w-auto" src="{{ asset('images/azad-logo.png') }}" alt="لوگو دانشگاه آزاد">
+                        <img class="h-16 sm:h-16 w-auto" src="{{ asset('images/azad-logo.png') }}" alt="لوگو دانشگاه آزاد">
                     </div>
+
+                    <!-- دکمه بازگشت به آموزشیار -->
+                    <a href="{{ route('amoozeshyar') }}"
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-gray-500 transition-colors duration-200">
+                        <svg class="w-5 h-5 ml-2 rtl:mr-2 rtl:ml-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+                        </svg>
+                        بازگشت
+                    </a>
 
                     <!-- دکمه خروج -->
                     <div>
