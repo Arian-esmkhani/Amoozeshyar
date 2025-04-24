@@ -46,7 +46,7 @@
                         </svg>
                     </div>
                     <h3 class="text-lg font-bold text-white mb-2">ارزشیابی استاد</h3>
-                    <p class="text-gray-300 text-sm">نظرسنجی از اساتید</p>
+                    <p class="text-gray-300 text-sm">نظرسنجی اساتید</p>
                 </a>
             </div>
         </div>

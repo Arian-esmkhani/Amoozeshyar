@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\VahedController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\NomreController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
     Route::get('/hazve', [VahedController::class, 'hazve'])->name('hazve');
     Route::get('/account', [AccountController::class, 'accountView'])->name('account');
-    Route::get('/score', [AccountController::class, 'scoreView'])->name('score');
+    Route::get('/score', [ScoreController::class, 'scoreView'])->name('score');
     Route::get('/nomre', [NomreController::class, 'nomre'])->name('nomre');
 });
 

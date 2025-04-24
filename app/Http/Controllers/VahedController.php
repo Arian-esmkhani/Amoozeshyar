@@ -10,15 +10,19 @@ use App\Models\UserStatus;
 use App\Services\CacheService;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class VahedController extends Controller
 {
-    protected $cacheService;
+    // protected $cacheService;
 
+    /*
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
     }
+    */
 
     public function entekhab()
     {
@@ -28,9 +32,13 @@ class VahedController extends Controller
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
         $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
-        $data = $this->cacheService->remember(
-            "lesson_offered_{$user->id}",
-            14400,
+        // Use Cache Facade directly with Tags for entekhab as well
+        $cacheTag = "user-lessons-{$user->id}"; // Use the same tag
+        $cacheKey = "lesson_offered_{$user->id}"; // Original key for entekhab
+
+        $data = Cache::tags($cacheTag)->remember(
+            $cacheKey,
+            14400, // Cache duration
             function () use ($user, $studentMajor, $studentSex, $passedLesson) {
                 // دریافت اطلاعات مرتبط با دانشجو
 
@@ -94,17 +102,19 @@ class VahedController extends Controller
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
         $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
-        $data = $this->cacheService->remember(
-            "lesson_offered_{$user->id}",
-            14400,
-            function () use ($user, $studentMajor, $studentSex, $passedLesson) {
-                // دریافت اطلاعات مرتبط با دانشجو
+        // Use Cache Facade directly with Tags
+        $cacheTag = "user-lessons-{$user->id}";
+        $cacheKey = "lesson_selected_hazf_{$user->id}";
 
+        $data = Cache::tags($cacheTag)->remember(
+            $cacheKey,
+            14400, // Cache duration (4 hours)
+            function () use ($user, $studentMajor, $studentSex, $passedLesson) {
                 $minMax = UserStatus::where('user_id', $user->id)->select('min_unit', 'max_unit')->first();
                 $userData = UserData::where('user_id', $user->id)->first();
-                $takeListen = UserStatus::where('user_id', $user->id)->value('take_listen');
+                $userStatus = UserStatus::where('user_id', $user->id)->first();
 
-                // دریافت درس‌های پیشنهادی
+                // Get offered lessons (same logic)
                 $lessonOffered = LessonOffered::where(function ($query) use ($studentMajor) {
                     $query->whereIn('major', [$studentMajor, 'عمومی', 'مهندسی']);
                 })
@@ -113,38 +123,35 @@ class VahedController extends Controller
                     })
                     ->get()
                     ->filter(function ($lesson) use ($passedLesson) {
-                        // اگر درس پیش‌نیاز ندارد، می‌تواند انتخاب شود
-                        if (empty($lesson->prerequisites)) {
-                            return true;
-                        }
-
-                        // اگر درس پیش‌نیاز دارد و دانشجو هیچ درسی را پاس نکرده
-                        if (empty($passedLesson)) {
-                            return false;
-                        }
-
-                        // بررسی پیش‌نیازها
+                        // Prerequisite check logic...
+                        if (empty($lesson->prerequisites)) return true;
+                        if (empty($passedLesson)) return false;
                         $prerequisites = explode(' ', $lesson->prerequisites);
                         $passedLessons = explode(' ', $passedLesson);
-
-                        // بررسی می‌کند که آیا حداقل یکی از پیش‌نیازها در دروس پاس شده وجود دارد
                         foreach ($prerequisites as $prerequisite) {
-                            if (in_array($prerequisite, $passedLessons)) {
-                                return true;
-                            }
+                            if (in_array($prerequisite, $passedLessons)) return true;
                         }
-
                         return false;
                     })
                     ->values();
 
+                // Get selected lessons (same logic)
+                $selectedLessons = collect();
+                $selectedLessonIds = [];
+                if ($userStatus && !empty($userStatus->take_listen)) {
+                    $selectedLessonIds = json_decode($userStatus->take_listen, true);
+                    if (is_array($selectedLessonIds) && count($selectedLessonIds) > 0) {
+                        $selectedLessons = LessonOffered::whereIn('lesten_id', $selectedLessonIds)->get();
+                    } else {
+                        $selectedLessonIds = [];
+                    }
+                }
 
-                // بازگرداندن داده‌های درس‌های پیشنهادی و minMax
                 return [
                     'lessonOffered' => $lessonOffered,
+                    'selectedLessons' => $selectedLessons,
                     'minMax' => $minMax,
                     'userData' => $userData,
-                    'takeListen' => $takeListen
                 ];
             }
         );

@@ -28,7 +28,7 @@
         <!-- این بخش شامل کامپوننت انتخاب واحد است -->
         <main class="flex-grow container mx-auto px-4 pt-24 pb-12">
             <!-- کامپوننت انتخاب واحد -->
-            <livewire:hazf :data="$data" />
+            <livewire:hazf-ezafe :data="$data" />
         </main>
 
         <!-- فوتر سایت -->

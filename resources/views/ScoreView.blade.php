@@ -29,12 +29,12 @@
 
         <main class="flex-grow container mx-auto px-4 py-8">
             <div class="max-w-4xl mx-auto">
-                @if(session('error'))
+                {{-- @if(session('error'))
                     <div class="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
                         {{ session('error') }}
                     </div>
                 @endif
-                <!-- کامپوننت حساب -->
+                <!-- کامپوننت حساب --> --}}
                 <livewire:ScoreView :data="$data"/>
             </div>
         </main>
