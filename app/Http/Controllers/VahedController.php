@@ -110,17 +110,33 @@ class VahedController extends Controller
             $cacheKey,
             14400, // Cache duration (4 hours)
             function () use ($user, $studentMajor, $studentSex, $passedLesson) {
+                // Get basic user info first
                 $minMax = UserStatus::where('user_id', $user->id)->select('min_unit', 'max_unit')->first();
                 $userData = UserData::where('user_id', $user->id)->first();
                 $userStatus = UserStatus::where('user_id', $user->id)->first();
 
-                // Get offered lessons (same logic)
+                // --- Get ACTUAL Selected Lessons based on take_listen ---
+                $selectedLessons = collect();
+                $selectedLessonIds = [];
+                if ($userStatus && !empty($userStatus->take_listen)) {
+                    $decodedIds = json_decode($userStatus->take_listen, true);
+                    $selectedLessonIds = is_array($decodedIds) ? array_values($decodedIds) : [];
+                    if (count($selectedLessonIds) > 0) {
+                        // Fetch selected lessons directly using IDs
+                        $selectedLessons = LessonOffered::whereIn('lesten_id', $selectedLessonIds)->get();
+                    }
+                }
+                // --- End Getting Selected Lessons ---
+
+                // --- Get Lessons Offered FOR ADDING (Apply filters) ---
                 $lessonOffered = LessonOffered::where(function ($query) use ($studentMajor) {
                     $query->whereIn('major', [$studentMajor, 'عمومی', 'مهندسی']);
                 })
                     ->where(function ($query) use ($studentSex) {
                         $query->whereIn('lesson_sex', [$studentSex, 'open']);
                     })
+                    // Optionally filter out already selected lessons from offered list?
+                    // ->whereNotIn('lesten_id', $selectedLessonIds)
                     ->get()
                     ->filter(function ($lesson) use ($passedLesson) {
                         // Prerequisite check logic...
@@ -134,22 +150,12 @@ class VahedController extends Controller
                         return false;
                     })
                     ->values();
+                // --- End Getting Offered Lessons ---
 
-                // Get selected lessons (same logic)
-                $selectedLessons = collect();
-                $selectedLessonIds = [];
-                if ($userStatus && !empty($userStatus->take_listen)) {
-                    $selectedLessonIds = json_decode($userStatus->take_listen, true);
-                    if (is_array($selectedLessonIds) && count($selectedLessonIds) > 0) {
-                        $selectedLessons = LessonOffered::whereIn('lesten_id', $selectedLessonIds)->get();
-                    } else {
-                        $selectedLessonIds = [];
-                    }
-                }
-
+                // Return both lists and other data
                 return [
-                    'lessonOffered' => $lessonOffered,
-                    'selectedLessons' => $selectedLessons,
+                    'lessonOffered' => $lessonOffered, // Lessons available to ADD
+                    'selectedLessons' => $selectedLessons, // ACTUAL selected lessons
                     'minMax' => $minMax,
                     'userData' => $userData,
                 ];

@@ -5,8 +5,10 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Services\AccountService;
 use App\Models\LessonStatus;
+use App\Models\LessonOffered;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 //کلاس ایجاد کامپننت انتخاب واحد
 class EntekhabVahed extends Component
@@ -138,8 +140,13 @@ class EntekhabVahed extends Component
             $this->lessonStatus = app(LessonStatus::class);
         }
 
+        // Use lesten_id for consistency, assuming this is the correct identifier stored
+        $lesson = $this->lessons->firstWhere('lesten_id', $lessonId);
+
         if (in_array($lessonId, $this->selectedLesson)) {
+            // --- REMOVING LESSON ---
             $this->selectedLesson = array_diff($this->selectedLesson, [$lessonId]);
+            $this->selectedLesson = array_values($this->selectedLesson); // Re-index after removal
 
             // Recalculate totals after removing lesson
             $this->calculateTotalUnits();
@@ -147,31 +154,34 @@ class EntekhabVahed extends Component
 
             //محاسبه زمان کلاس ها
             $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
-                return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+                return !str_starts_with($schedule, "{$lessonId} ");
             });
 
-            // Delete the corresponding LessonStatus record
-            $this->lessonStatus
+            // <<< 2b. Update LessonStatus status before soft deleting >>>
+            $statusRecord = $this->lessonStatus
                 ->where('lesson_id', $lessonId)
                 ->where('student_name', $this->userData->name)
-                ->delete();
+                ->first();
 
-            // Decrement registered count (assuming $lessons contains appropriate objects)
-            // Consider refactoring this if $lessons doesn't hold persistent models
-            $lesson = $this->lessons->firstWhere('id', $lessonId);
+            if ($statusRecord) {
+                $statusRecord->lesson_status = 'حذف'; // Set status
+                $statusRecord->save();          // Save change
+                $statusRecord->delete();         // Soft delete
+            } else {
+                Log::warning("EntekhabVahed: LessonStatus record not found for lesson_id {$lessonId} / student {$this->userData->name} during removal.");
+            }
+
+            // Decrement registered count in memory
             if ($lesson) {
-                $lesson->registered_count = max(0, $lesson->registered_count - 1); // Prevent going below zero
+                $lesson->registered_count = max(0, $lesson->registered_count - 1);
+                // <<< 1b. Persist decrement to DB >>>
+                LessonOffered::where('lesten_id', $lessonId)->where('registered_count', '>', 0)->decrement('registered_count');
             }
         } else {
-            //درس را از لیست دروس انتخاب کنیم
-            $lesson = $this->lessons->firstWhere('id', $lessonId); // Assuming $lessonId is the primary key 'id'
-
-            // Return early if lesson not found (robustness)
+            // --- ADDING LESSON ---
             if (!$lesson) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "درس مورد نظر یافت نشد."
-                ]);
+                session()->flash('message', "درس مورد نظر یافت نشد.");
+                session()->flash('type', 'error');
                 return;
             }
 
@@ -182,39 +192,41 @@ class EntekhabVahed extends Component
             $schedule = json_decode($lesson->class_schedule);
 
             // استخراج روزها و زمان شروع و پایان
-            $days = implode('، ', $schedule->days);
-            $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
-
+            $days = '';
+            $timeRange = '';
+            if ($schedule && isset($schedule->days) && isset($schedule->time->start) && isset($schedule->time->end)) {
+                $days = implode('، ', (array)$schedule->days);
+                $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
+            }
+            $scheduleStringToCheck = $days . ' ' . $timeRange;
+            if (!empty(trim($scheduleStringToCheck))) {
+                foreach ($this->classSchedules as $existingSchedule) {
+                    $existingDayTime = substr($existingSchedule, strpos($existingSchedule, ' ') + 1);
+                    if ($existingDayTime === $scheduleStringToCheck) {
+                        session()->flash('message', "تداخل زمانی با درس دیگری در روز {$days} ساعت {$timeRange} وجود دارد.");
+                        session()->flash('type', 'error');
+                        return;
+                    }
+                }
+            }
 
             //بررسی اگر تعداد واحدهای انتخاب شده از حداکثر واحد مجاز بیشتر باشد
             if ($newTotalUnits > $this->maxUnits) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود."
-                ]);
+                session()->flash('message', "با انتخاب این درس از سقف مجاز واحد ({$this->maxUnits}) بیشتر می‌شود.");
+                session()->flash('type', 'error');
                 return;
             }
 
             //بررسی اگر ظرفیت کلاس تکمیل شده باشد
             if ($lesson->capacity <= $lesson->registered_count) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "ظرفیت این درس تکمیل شده است."
-                ]);
+                session()->flash('message', "ظرفیت این درس تکمیل شده است.");
+                session()->flash('type', 'error');
                 return;
             }
-
-            if (in_array($days . ' ' . $timeRange, $this->classSchedules)) {
-                $this->dispatch('show-message', [
-                    'type' => 'error',
-                    'message' => "درس در زمان{$days} {$timeRange} انتخاب شده است."
-                ]);
-                return;
-            }
-
 
             //درس را به لیست دروس انتخاب شده اضافه کنیم
             $this->selectedLesson[] = $lessonId;
+            $this->selectedLesson = array_values($this->selectedLesson); // Ensure keys are sequential after adding
 
             //محاسبه تعداد کل واحدهای انتخاب شده
             $this->calculateTotalUnits();
@@ -225,8 +237,12 @@ class EntekhabVahed extends Component
             //محاسبه زمان کلاس ها
             $this->calculateTotalTime($lessonId, $days, $timeRange);
 
+            // Increment registered_count in memory
             $lesson->registered_count++;
+            // <<< 1a. Persist increment to DB >>>
+            LessonOffered::where('lesten_id', $lessonId)->increment('registered_count');
 
+            // Create LessonStatus record
             $this->lessonStatus->create([
                 'lesson_id' => $lessonId,
                 'lesson_name' => $lesson->lesten_name,
@@ -243,13 +259,13 @@ class EntekhabVahed extends Component
     protected function calculateTotalUnits()
     {
         //محاسبه تعداد کل واحدهای انتخاب شده
-        $this->totalUnits = $this->lessons->whereIn('id', $this->selectedLesson)->sum('unit_count');
+        $this->totalUnits = $this->lessons->whereIn('lesten_id', $this->selectedLesson)->sum('unit_count');
     }
 
     //محاسبه حزینه کل دروس
     protected function calculateTotalMoney()
     {
-        $this->totalMoney = $this->lessons->whereIn('id', $this->selectedLesson)->sum('lesten_price');
+        $this->totalMoney = $this->lessons->whereIn('lesten_id', $this->selectedLesson)->sum('lesten_price');
     }
 
     //محاسبه زمان کلاس ها
@@ -288,8 +304,8 @@ class EntekhabVahed extends Component
                 return;
             }
 
-            //  تبدیل آرایه درس‌های انتخاب شده به JSON
-            $selectedLessonsJson = json_encode($this->selectedLesson);
+            //  تبدیل آرایه درس‌های انتخاب شده به JSON (با تضمین اینکه آرایه باشد)
+            $selectedLessonsJson = json_encode(array_values($this->selectedLesson));
 
             //  به‌روزرسانی ستون take_listen در userStatus
             $userStatus->update([

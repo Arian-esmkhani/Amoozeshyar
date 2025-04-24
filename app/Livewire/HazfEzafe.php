@@ -88,20 +88,28 @@ class HazfEzafe extends Component
         // مقداردهی داده‌های اولیه از کنترلر
         $this->minUnits = $data['minMax']->min_unit ?? 0;
         $this->maxUnits = $data['minMax']->max_unit ?? 24;
-        $this->lessons = $data['lessonOffered'] ?? collect();
         $this->userData = $data['userData'];
+        $this->lessons = $data['lessonOffered'] ?? collect(); // همه دروس قابل افزودن
 
         // گرفتن ID های ذخیره شده در دیتابیس به عنوان مقدار پیش‌فرض
         $savedLessonIds = ($data['selectedLessons'] ?? collect())->pluck('lesten_id')->toArray();
-        // خواندن از سشن، اگر نبود از مقدار دیتابیس استفاده کن
+
+        // خواندن ID های دروس گرفته شده از سشن، اگر نبود از مقدار دیتابیس استفاده کن
         $this->takeListen = Session::get($this->getSessionKey(), $savedLessonIds);
 
-        // بازسازی کالکشن selectedLessons بر اساس ID های بارگذاری شده
-        $this->selectedLessons = $this->lessons->whereIn('lesten_id', $this->takeListen)->values();
+        // <<< بازسازی selectedLessons بر اساس takeListen بارگذاری شده از سشن >>>
+        $allLessonsCollection = ($this->lessons instanceof Collection) ? $this->lessons : collect($this->lessons);
+        // همچنین دروس اولیه (از دیتابیس) را به لیست کلی اضافه می‌کنیم تا اگر درسی حذف شده بود و الان در سشن نیست،
+        // ولی از دیتابیس آمده، در بازسازی لحاظ شود.
+        $initialSelectedLessons = $data['selectedLessons'] ?? collect();
+        $combinedLessonsForLookup = $allLessonsCollection->merge($initialSelectedLessons)->unique('lesten_id'); // اطمینان از یکتایی
 
-        // محاسبه وضعیت اولیه بر اساس takeListen بارگذاری شده
+        $this->selectedLessons = $combinedLessonsForLookup->whereIn('lesten_id', $this->takeListen)->values();
+        // <<< پایان بازسازی >>>
+
+        // محاسبه وضعیت اولیه (واحدها و ...) بر اساس selectedLessons بازسازی شده
         $this->calculateInitialState();
-        $this->UniqueLessons();
+        $this->UniqueLessons(); // برای نمایش لیست دروس قابل افزودن
     }
 
     //محاسبه وضعیت اولیه (واحدها و زمانبندی) بر اساس دروس از قبل انتخاب شده
@@ -110,6 +118,7 @@ class HazfEzafe extends Component
         $this->totalUnits = 0;
         $this->classSchedules = [];
 
+        // <<< محاسبه بر اساس selectedLessons واقعی >>>
         foreach ($this->selectedLessons as $lesson) {
             $this->totalUnits += $lesson->unit_count;
             // Decode schedule and add to classSchedules for conflict checking
@@ -125,10 +134,10 @@ class HazfEzafe extends Component
         }
     }
 
-    //این متد دروس تکراری را حذف می‌کند و فقط یک نمونه از هر درس را نگه می‌دارد
+    //این متد دروس تکراری (قابل افزودن) را حذف می‌کند
     protected function UniqueLessons()
     {
-        // Ensure $this->lessons is a collection
+        // <<< باید روی this->lessons (قابل افزودن) کار کند >>>
         if ($this->lessons instanceof Collection) {
             $this->uniqueLessons = $this->lessons->unique('lesten_name');
         } else {
@@ -228,6 +237,7 @@ class HazfEzafe extends Component
 
             // Update account and lesson status log
             $this->accountService->userAdd($lesson->lesten_price);
+
             $this->lessonStatus->create([
                 'lesson_id' => $lessonId,
                 'lesson_name' => $lesson->lesten_name,
@@ -243,12 +253,7 @@ class HazfEzafe extends Component
     //محاسبه تعداد کل واحدهای انتخاب شده
     protected function calculateTotalUnits()
     {
-        // Ensure $this->lessons is a collection before filtering
-        $lessonsCollection = ($this->lessons instanceof Collection) ? $this->lessons : collect($this->lessons);
-        $this->totalUnits = $lessonsCollection->whereIn('lesten_id', $this->takeListen)->sum('unit_count');
-
-        // Also recalculate based on $this->selectedLessons as a cross-check or primary source
-        // $this->totalUnits = $this->selectedLessons->sum('unit_count');
+        $this->totalUnits = $this->selectedLessons->sum('unit_count');
     }
 
     //محاسبه زمان کلاس ها
@@ -333,7 +338,16 @@ class HazfEzafe extends Component
             return;
         }
 
-        $initialTakeListenCount = count($this->takeListen);
+        // <<< بررسی حداقل واحد قبل از حذف >>>
+        $newTotalUnits = $this->totalUnits - $lesson->unit_count;
+        if ($newTotalUnits < $this->minUnits) {
+            session()->flash('message', "با حذف این درس، حداقل واحد مجاز ({$this->minUnits}) رعایت نمی‌شود.");
+            session()->flash('type', 'error');
+            return; // << جلوگیری از ادامه حذف
+        }
+        // <<< پایان بررسی حداقل واحد >>>
+
+        $initialTakeListenCount = count($this->takeListen); // برای اطمینان از اینکه واقعا حذف شده
 
         // Remove lesson ID from takeListen array
         $this->takeListen = array_diff($this->takeListen, [$lessonId]);
@@ -344,53 +358,45 @@ class HazfEzafe extends Component
             $this->selectedLessons = $this->selectedLessons->reject(function ($selectedLesson) use ($lessonId) {
                 return $selectedLesson->lesten_id == $lessonId;
             });
-        }
 
-        //محاسبه زمان کلاس ها - حذف زمان این درس
-        $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
-            return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
-        });
+            //محاسبه زمان کلاس ها - حذف زمان این درس
+            $this->classSchedules = array_filter($this->classSchedules, function ($schedule) use ($lessonId) {
+                return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
+            });
 
-        // Update totals
-        $this->calculateTotalUnits();
+            // Update totals
+            $this->calculateTotalUnits(); // Recalculate after state change
 
-        // <<< ذخیره وضعیت موقت در سشن >>>
-        $this->updateSessionState();
+            // <<< ذخیره وضعیت موقت در سشن >>>
+            $this->updateSessionState();
 
-        // Decrement registered_count in memory and database
-        $lesson->registered_count = max(0, $lesson->registered_count - 1); // Ensure it doesn't go below 0 in memory
-        LessonOffered::where('lesten_id', $lessonId)->where('registered_count', '>', 0)->decrement('registered_count');
+            // Decrement registered_count in memory and database
+            $lesson->registered_count = max(0, $lesson->registered_count - 1); // Ensure it doesn't go below 0 in memory
+            LessonOffered::where('lesten_id', $lessonId)->where('registered_count', '>', 0)->decrement('registered_count');
 
-        // به‌روزرسانی تعداد کل واحدها
-        $this->calculateTotalUnits();
+            // به‌روزرسانی تعداد کل واحدها
+            $this->calculateTotalUnits();
 
-        // Check minimum units *after* recalculating
-        // Note: Original code checked before recalculating totalUnits, which was likely wrong.
-        if ($this->totalUnits < $this->minUnits) {
-            session()->flash('message', "با حذف این درس، کف مجاز واحد ({$this->minUnits}) رعایت نمی‌شود.");
-            session()->flash('type', 'error');
-            return;
-        }
+            // Update account credit
+            if ($this->accountService) {
+                $this->accountService->updateCredit($lesson->lesten_price); // Corrected typo: ubdatCredit -> updateCredit
+            }
 
-        // Update account credit
-        if ($this->accountService) {
-            $this->accountService->ubdatCredit($lesson->lesten_price); // Corrected typo: ubdatCredit -> updateCredit
-        }
+            // Find the existing status record and update/soft delete it.
+            $statusRecord = null;
+            if ($this->lessonStatus) { // Ensure lessonStatus service is initialized
+                $statusRecord = $this->lessonStatus->where('lesson_id', $lessonId)
+                    ->where('student_name', $this->userData->name)
+                    ->first();
 
-        // Find the existing status record and update/soft delete it.
-        $statusRecord = null;
-        if ($this->lessonStatus) { // Ensure lessonStatus service is initialized
-            $statusRecord = $this->lessonStatus->where('lesson_id', $lessonId)
-                ->where('student_name', $this->userData->name)
-                ->first();
+                if ($statusRecord) {
+                    // ابتدا فیلد وضعیت را به‌روزرسانی کن
+                    $statusRecord->lesson_status = 'حذف';
+                    $statusRecord->save();
 
-            if ($statusRecord) {
-                // ابتدا فیلد وضعیت را به‌روزرسانی کن
-                $statusRecord->lesson_status = 'حذف';
-                $statusRecord->save();
-
-                // سپس رکورد را سافت دیلیت کن
-                $statusRecord->delete();
+                    // سپس رکورد را سافت دیلیت کن
+                    $statusRecord->delete();
+                }
             }
         }
     }
