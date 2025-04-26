@@ -2,19 +2,28 @@
 
 namespace App\Http\Middleware;
 
+// استفاده از Closure برای مدیریت ادامه درخواست‌ها
 use Closure;
+
+// استفاده از Request برای مدیریت درخواست HTTP
 use Illuminate\Http\Request;
+
+// استفاده از Response برای مدیریت پاسخ‌های HTTP
 use Symfony\Component\HttpFoundation\Response;
 
+// تعریف کلاس TrimStrings
 class TrimStrings
 {
     /**
-     * Handle an incoming request.
+     * مدیریت یک درخواست ورودی.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Request $request درخواست ورودی کاربر
+     * @param  Closure $next تابعی که درخواست را به مرحله بعد هدایت می‌کند
+     * @return Response پاسخ نهایی به درخواست
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // ارسال درخواست به مرحله بعدی پردازش بدون هیچ تغییری
         return $next($request);
     }
 }

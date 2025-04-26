@@ -10,19 +10,18 @@ use App\Models\UserStatus;
 use App\Services\CacheService;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class VahedController extends Controller
 {
-    // protected $cacheService;
+     protected $cacheService;
 
-    /*
+
     public function __construct(CacheService $cacheService)
     {
         $this->cacheService = $cacheService;
     }
-    */
+
 
     public function entekhab()
     {
