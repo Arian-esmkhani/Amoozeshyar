@@ -5,15 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller; // پایه کنترلرهای لاراول
 use App\Services\AuthService; // سرویس احراز هویت
 use Illuminate\Http\Request; // مدیریت درخواست‌های HTTP
-use Illuminate\Support\Facades\Auth; // احراز هویت لاراول
 use Illuminate\Validation\ValidationException; // خطای اعتبارسنجی
 
-/**
- * کنترلر مدیریت ورود و خروج کاربران
- *
- * این کنترلر مسئولیت مدیریت فرآیند احراز هویت کاربران را بر عهده دارد
- * و از سرویس AuthService برای انجام عملیات‌های مربوط به احراز هویت استفاده می‌کند
- */
+
+// کنترلر مدیریت ورود و خروج کاربران
 class LoginController extends Controller
 {
     /**
@@ -43,9 +38,6 @@ class LoginController extends Controller
      * نمایش فرم ورود
      *
      * @return \Illuminate\View\View
-     *
-     * این متد صفحه ورود را نمایش می‌دهد که شامل فرم ورود با فیلدهای
-     * نام کاربری و رمز عبور است
      */
     public function showLoginForm()
     {

@@ -1,66 +1,67 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers; // تعریف فضای نام برای کنترلرها
 
-use App\Models\UserData;
-use App\Models\UserGpa;
-use App\Models\UserStatus;
-use App\Models\StudentData;
-use App\Models\LessonOffered;
-use App\Services\CacheService;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\Models\UserData; // استفاده از مدل UserData
+use App\Models\UserGpa; // استفاده از مدل UserGpa
+use App\Models\UserStatus; // استفاده از مدل UserStatus
+use App\Models\StudentData; // استفاده از مدل StudentData
+use App\Models\LessonOffered; // استفاده از مدل LessonOffered
+use App\Services\CacheService; // استفاده از سرویس کش
+use Illuminate\Routing\Controller; // استفاده از کنترلر پایه
+use Illuminate\Support\Facades\Auth; //Auth برای مدیریت احراز هویت
 
-class profilController extends Controller
+class profilController extends Controller // تعریف کلاس profilController که از Controller ارث می‌برد
 {
-    protected $cacheService;
+    protected $cacheService; // تعریف یک متغیر برای ذخیره سرویس کش
 
+    // سازنده کلاس که سرویس کش را به عنوان وابستگی دریافت می‌کند
     public function __construct(CacheService $cacheService)
     {
-        $this->cacheService = $cacheService;
+        $this->cacheService = $cacheService; // ذخیره سرویس کش در متغیر
     }
 
+    // متد dashbord که برای نمایش داشبورد پروفایل کاربر استفاده می‌شود
     public function dashbord()
     {
-        $user = Auth::user();
-        // Get the JSON string
+        $user = Auth::user(); // دریافت کاربر فعلی
+        // دریافت رشته JSON از وضعیت کاربر
         $takeLessonJson = UserStatus::where('user_id', $user->id)->value('take_listen');
-        // Decode the JSON string into an array, default to empty array if null or invalid
+        // تبدیل رشته JSON به آرایه، در صورت نادرست بودن یا null به آرایه خالی برمی‌گردد
         $takeLessonIds = json_decode($takeLessonJson, true) ?? [];
-        // Ensure it's an array and filter out any non-numeric values just in case
+        // اطمینان از اینکه آرایه است و فیلتر کردن مقادیر غیر عددی
         $takeLessonIds = is_array($takeLessonIds) ? array_filter($takeLessonIds, 'is_numeric') : [];
 
-        $cacheKey = "user_profil_{$user->id}"; // Define cache key outside closure
+        $cacheKey = "user_profil_{$user->id}"; // تعریف کلید کش
 
         $data = $this->cacheService->remember(
             $cacheKey,
-            360,
-            // Pass the decoded IDs to the closure
+            360, // زمان انقضای کش به ثانیه
+            // تابعی که داده‌ها را از پایگاه داده می‌گیرد
             function () use ($user, $takeLessonIds) {
-                $userStatus = UserStatus::where('user_id', $user->id)->select('term', 'passed_units')->first();
-                $studentData = StudentData::where('user_id', $user->id)->select('degree_level', 'major')->first();
-                $userGpa = UserGpa::where('user_id', $user->id)->select('last_gpa', 'cumulative_gpa')->first();
-                // Fetch user name directly, not just the value if you need the object later (though value is fine if only name is needed)
-                $userData = UserData::where('user_id', $user->id)->first(); // Get the model instance
+                $userStatus = UserStatus::where('user_id', $user->id)->select('term', 'passed_units')->first(); // وضعیت کاربر
+                $studentData = StudentData::where('user_id', $user->id)->select('degree_level', 'major')->first(); // داده‌های دانشجویی
+                $userGpa = UserGpa::where('user_id', $user->id)->select('last_gpa', 'cumulative_gpa')->first(); // GPA کاربر
+                $userData = UserData::where('user_id', $user->id)->first(); // داده‌های کاربر
 
-                // Fetch lessons using the decoded IDs array with whereIn and get()
-                $lessons = collect(); // Default to empty collection
+                // دریافت درس‌ها با استفاده از آرایه ID های گرفته شده
+                $lessons = collect(); // مجموعه خالی به عنوان پیش‌فرض
                 if (!empty($takeLessonIds)) {
-                    $lessons = LessonOffered::whereIn('lesten_id', $takeLessonIds)->get();
+                    $lessons = LessonOffered::whereIn('lesten_id', $takeLessonIds)->get(); // دریافت درس‌ها
                 }
 
-
                 return [
-                    'userStatus' => $userStatus,
-                    'studentData' => $studentData,
-                    'userGpa' => $userGpa,
-                    'userData' => $userData, // Pass the user data object
-                    'lessons' => $lessons // Pass the collection of lessons
+                    'userStatus' => $userStatus, // وضعیت کاربر
+                    'studentData' => $studentData, // داده‌های دانشجویی
+                    'userGpa' => $userGpa, // GPA کاربر
+                    'userData' => $userData, // داده‌های کاربر
+                    'lessons' => $lessons // مجموعه درس‌ها
                 ];
             }
         );
 
-        // Render the standard Blade view 'profil' located at resources/views/profil.blade.php
+        // بازگشت به نمای 'profil' با داده‌های کاربر
         return view('profil', compact('data'));
     }
 }
+
