@@ -10,7 +10,6 @@ use App\Models\UserStatus; // استفاده از مدل UserStatus
 use App\Services\CacheService; // استفاده از سرویس کش
 use Illuminate\Routing\Controller; // استفاده از کنترلر پایه
 use Illuminate\Support\Facades\Auth; // Auth برای مدیریت احراز هویت
-use Illuminate\Support\Facades\Cache; // Cache برای کش کردن داده‌ها
 
 class VahedController extends Controller // تعریف کلاس VahedController که از Controller ارث می‌برد
 {
@@ -32,12 +31,8 @@ class VahedController extends Controller // تعریف کلاس VahedController 
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
         $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
-        // استفاده از کش برای ذخیره‌سازی داده‌ها
-        $cacheTag = "user-lessons-{$user->id}"; //  کش
-        $cacheKey = "lesson_offered_{$user->id}"; // کلید کش
-
-        $data = Cache::tags($cacheTag)->remember(
-            $cacheKey,
+        $data = $this->cacheService->remember(
+            "lesson_offered_{$user->id}",
             14400, // زمان انقضای کش (4 ساعت)
             function () use ($user, $studentMajor, $studentSex, $passedLesson) {
                 // دریافت اطلاعات مرتبط با دانشجو
@@ -98,12 +93,8 @@ class VahedController extends Controller // تعریف کلاس VahedController 
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
         $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
-        // استفاده از کش برای ذخیره‌سازی داده‌ها
-        $cacheTag = "user-lessons-{$user->id}";
-        $cacheKey = "lesson_selected_hazf_{$user->id}";
-
-        $data = Cache::tags($cacheTag)->remember(
-            $cacheKey,
+        $data = $this->cacheService->remember(
+            "user-lessons-{$user->id}",
             14400, // زمان انقضای کش (4 ساعت)
             function () use ($user, $studentMajor, $studentSex, $passedLesson) {
                 // دریافت اطلاعات پایه کاربر

@@ -9,10 +9,10 @@ use App\Http\Controllers\NomreController;
 use App\Http\Controllers\profilController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Volt;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Panel;
+use App\Http\Middleware\StudentRoleMiddleware;
 
 // مسیر اصلی - اگر کاربر لاگین کرده باشد به main می‌رود، در غیر این صورت به azad
 Route::get('/', function () {
@@ -37,8 +37,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [profilController::class, 'dashbord'])->name('profil');
 });
 
+Route::middleware('auth', 'master')->group(function () {
+
+});
+
+Route::middleware('auth', 'admin')->group(function () {
+
+});
+
+// هنگام اجرای برنامه Filament، این تابع فراخوانی می‌شود
 Filament::serving(function () {
+
+    // ثبت یک پنل جدید در Filament
     Filament::registerPanel(
+
+        // دریافت نمونه‌ای از کلاس AdminPanelProvider و ایجاد یک پنل جدید
         app(AdminPanelProvider::class)->panel(new Panel)
     );
 });

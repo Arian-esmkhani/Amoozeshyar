@@ -2,27 +2,28 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Livewire\Volt\Volt;
+use Illuminate\Support\ServiceProvider;//سرویس ServiceProvider
+use Livewire\Volt\Volt;//سرویس Volt
 
 class VoltServiceProvider extends ServiceProvider
 {
     /**
-     * Register services.
+     * ثبت سرویس‌ها.
      */
     public function register(): void
     {
-        //
+        // اینجا می‌توانید سرویس‌های خود را ثبت کنید
     }
 
     /**
-     * Bootstrap services.
+     * راه‌اندازی سرویس‌ها.
      */
     public function boot(): void
     {
+        // بارگذاری مسیرهای نمای Volt
         Volt::mount([
-            config('livewire.view_path', resource_path('views/livewire')),
-            resource_path('views/pages'),
+            config('livewire.view_path', resource_path('views/livewire')), // مسیر نمای Livewire
+            resource_path('views/pages'), // مسیر نمای صفحات
         ]);
     }
 }

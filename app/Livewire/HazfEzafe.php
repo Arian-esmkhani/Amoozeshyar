@@ -10,7 +10,6 @@ use App\Models\LessonOffered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cache;
 
@@ -86,8 +85,8 @@ class HazfEzafe extends Component
         $this->lessonStatus = app(LessonStatus::class);
 
         // مقداردهی داده‌های اولیه از کنترلر
-        $this->minUnits = $data['minMax']->min_unit ?? 0;
-        $this->maxUnits = $data['minMax']->max_unit ?? 24;
+        $this->minUnits = $data['minMax']->min_unit ?? 12;
+        $this->maxUnits = $data['minMax']->max_unit ?? 20;
         $this->userData = $data['userData'];
         $this->lessons = $data['lessonOffered'] ?? collect(); // همه دروس قابل افزودن
 
@@ -127,7 +126,7 @@ class HazfEzafe extends Component
                 if ($schedule && isset($schedule->days) && isset($schedule->time->start) && isset($schedule->time->end)) {
                     $days = implode('، ', $schedule->days);
                     $timeRange = "{$schedule->time->start} - {$schedule->time->end}";
-                    // Store schedule string similar to how it's checked in actionLesson
+                    // بقیه همینطور
                     $this->classSchedules[] = "{$lesson->lesten_id} {$days} {$timeRange}";
                 }
             }
@@ -152,19 +151,19 @@ class HazfEzafe extends Component
         $this->showLessonList = false;
         $this->showLessonDetails = true;
         $this->lessonName = $lessonName;
-        // Ensure $this->lessons is a collection
+        //یافتن درس مرتبط با اسم درس
         $lessonsCollection = ($this->lessons instanceof Collection) ? $this->lessons : collect($this->lessons);
-        // Use filter instead of where
+        //فیلتر کردن دروس مرتبط با اسم درس
         $filteredLessons = $lessonsCollection->filter(function ($lesson) use ($lessonName) {
             return $lesson->lesten_name === $lessonName;
         });
-        $this->lessonSelected = $filteredLessons->values()->all(); // Get as array
+        $this->lessonSelected = $filteredLessons->values()->all(); // به صورت آرایه برگرداندن
     }
 
     //این متد برای انتخاب درس است
     public function actionLesson($lessonId)
     {
-        // Ensure services are initialized (Workaround for potential state loss)
+        // اگر سرویس خالی باشد، آن را مقداردهی اولیه می‌کنیم
         if (is_null($this->accountService)) {
             $this->accountService = app(AccountService::class);
         }
@@ -207,7 +206,7 @@ class HazfEzafe extends Component
             return;
         }
 
-        // Check for time conflict using the schedule string format
+        // یافتن تداخل زمانی
         $scheduleStringToCheck = $days . ' ' . $timeRange;
         if (!empty(trim($scheduleStringToCheck))) {
             foreach ($this->classSchedules as $existingSchedule) {
@@ -225,17 +224,19 @@ class HazfEzafe extends Component
             $this->takeListen[] = $lessonId;
             $this->selectedLessons->push($lesson);
 
-            // Update totals and schedules
+            // محاسبه تعداد کل واحدهای انتخاب شده
             $this->calculateTotalUnits();
+
+            // محاسبه زمان کلاس ها
             $this->calculateTotalTime($lessonId, $days, $timeRange);
 
             // <<< ذخیره وضعیت موقت در سشن >>>
             $this->updateSessionState();
 
-            // Persist registered_count increment to DB
+            // افزایش registered_count در دیتابیس
             LessonOffered::where('lesten_id', $lessonId)->increment('registered_count');
 
-            // Update account and lesson status log
+            // به‌روزرسانی اعتبار حساب و سیاهه‌ی درس
             $this->accountService->userAdd($lesson->lesten_price);
 
             $this->lessonStatus->create([
@@ -259,7 +260,7 @@ class HazfEzafe extends Component
     //محاسبه زمان کلاس ها
     protected function calculateTotalTime($lessonId, $days, $timeRange)
     {
-        // Ensure schedule string is not already added for this lesson ID
+        // ایجاد رشته زمانی جدید
         $newScheduleString = "{$lessonId} {$days} {$timeRange}";
         if (!in_array($newScheduleString, $this->classSchedules)) {
             $this->classSchedules[] = $newScheduleString;
@@ -304,10 +305,6 @@ class HazfEzafe extends Component
             // <<< پاک کردن وضعیت موقت از سشن >>>
             Session::forget($this->getSessionKey());
 
-            // <<< پاک کردن کش کنترلر با استفاده از تگ >>>
-            $cacheTag = "user-lessons-{$user->id}"; // Define the same tag as in controller
-            Cache::tags($cacheTag)->flush(); // Flush all cache items with this tag
-
             // ارسال پیام موفقیت
             session()->flash('message', 'تغییرات حذف و اضافه با موفقیت ثبت شدند.');
             session()->flash('type', 'success');
@@ -321,7 +318,7 @@ class HazfEzafe extends Component
     //از این جا به بعد برای حذف کردن در حذف و اضافه هستش
     public function hazf($lessonId)
     {
-        // Ensure services are initialized (Workaround for potential state loss)
+        // اگر سرویس خالی باشد، آن را مقداردهی اولیه می‌کنیم
         if (is_null($this->accountService)) {
             $this->accountService = app(AccountService::class);
         }
@@ -349,12 +346,12 @@ class HazfEzafe extends Component
 
         $initialTakeListenCount = count($this->takeListen); // برای اطمینان از اینکه واقعا حذف شده
 
-        // Remove lesson ID from takeListen array
+        // حذف ID درس از آرایه takeListen
         $this->takeListen = array_diff($this->takeListen, [$lessonId]);
 
         // فقط اگر درسی واقعا از لیست حذف شد، ادامه بده
         if (count($this->takeListen) < $initialTakeListenCount) {
-            // Remove lesson object from selectedLessons collection
+            // حذف درس از لیست دروس انتخاب شده
             $this->selectedLessons = $this->selectedLessons->reject(function ($selectedLesson) use ($lessonId) {
                 return $selectedLesson->lesten_id == $lessonId;
             });
@@ -364,27 +361,27 @@ class HazfEzafe extends Component
                 return !str_starts_with($schedule, "{$lessonId} "); // آیتم‌هایی که با ایدی موردنظر شروع می‌شوند حذف می‌شوند
             });
 
-            // Update totals
-            $this->calculateTotalUnits(); // Recalculate after state change
+            // محاسبه تعداد کل واحدهای انتخاب شده
+            $this->calculateTotalUnits();
 
             // <<< ذخیره وضعیت موقت در سشن >>>
             $this->updateSessionState();
 
-            // Decrement registered_count in memory and database
-            $lesson->registered_count = max(0, $lesson->registered_count - 1); // Ensure it doesn't go below 0 in memory
+            // افزایش registered_count در حافظه
+            $lesson->registered_count = max(0, $lesson->registered_count - 1);
             LessonOffered::where('lesten_id', $lessonId)->where('registered_count', '>', 0)->decrement('registered_count');
 
             // به‌روزرسانی تعداد کل واحدها
             $this->calculateTotalUnits();
 
-            // Update account credit
+            // به‌روزرسانی اعتبار حساب
             if ($this->accountService) {
-                $this->accountService->updateCredit($lesson->lesten_price); // Corrected typo: ubdatCredit -> updateCredit
+                $this->accountService->updateCredit($lesson->lesten_price); // اصلاح خطا: ubdatCredit -> updateCredit
             }
 
-            // Find the existing status record and update/soft delete it.
+            // زیرا این سرویس قبلا مقداردهی اولیه شده است
             $statusRecord = null;
-            if ($this->lessonStatus) { // Ensure lessonStatus service is initialized
+            if ($this->lessonStatus) { // اصلاح خطا: lessonStatus service is initialized
                 $statusRecord = $this->lessonStatus->where('lesson_id', $lessonId)
                     ->where('student_name', $this->userData->name)
                     ->first();
@@ -403,10 +400,6 @@ class HazfEzafe extends Component
 
     /**
      * رندر کردن ویو
-     *
-     * این متد صفحه انتخاب واحد را رندر می‌کند
-     * و تمام داده‌های مورد نیاز را به ویو ارسال می‌کند
-     *
      * @return View
      */
     public function render()

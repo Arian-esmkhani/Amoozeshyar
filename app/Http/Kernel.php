@@ -44,6 +44,8 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class, // احراز هویت کاربر
+        'master' => \App\Http\Middleware\MasterMid::class,
+        'admin' => \App\Http\Middleware\AdminMid::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class, // احراز هویت پایه
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class, // احراز هویت session
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class, // تنظیم هدرهای کش
