@@ -36,22 +36,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/nomre', [NomreController::class, 'nomre'])->name('nomre');
     Route::get('/profil', [profilController::class, 'dashbord'])->name('profil');
 });
-
-Route::middleware('auth', 'master')->group(function () {
-
-});
-
-Route::middleware('auth', 'admin')->group(function () {
-
-});
-
-// هنگام اجرای برنامه Filament، این تابع فراخوانی می‌شود
-Filament::serving(function () {
-
-    // ثبت یک پنل جدید در Filament
-    Filament::registerPanel(
-
-        // دریافت نمونه‌ای از کلاس AdminPanelProvider و ایجاد یک پنل جدید
-        app(AdminPanelProvider::class)->panel(new Panel)
-    );
-});
