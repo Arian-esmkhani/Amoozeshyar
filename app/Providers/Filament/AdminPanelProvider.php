@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\CustomLogin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -26,9 +27,9 @@ class AdminPanelProvider extends PanelProvider
             ->default() // تنظیمات پیش‌فرض پنل
             ->id('admin') // مشخص کردن شناسه پنل
             ->path('admin') // مسیر دسترسی به پنل
-            ->login() // تنظیم قابلیت ورود به سیستم در پنل فیلمنت
+            ->login(CustomLogin::class) // Register the custom login page
             ->colors([
-                    'primary' => Color::Amber, // تنظیم رنگ اصلی پنل
+                'primary' => Color::Amber, // تنظیم رنگ اصلی پنل
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources') // کشف و بارگذاری منابع
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages') // کشف و بارگذاری صفحات

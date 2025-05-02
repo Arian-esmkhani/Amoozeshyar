@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\HasName; // Import HasName interface
 use Illuminate\Database\Eloquent\Factories\HasFactory; //استفاده از حس فکتوری
 use Illuminate\Database\Eloquent\SoftDeletes; //استفاده از حذف امن
 use Illuminate\Foundation\Auth\User as Authenticatable; //استفاده از سیستم احراز هویت
@@ -11,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens; //استفاده از هس پی توکن
 /**
  * تعریف یک کلاس برای کار با مدل یوزر بیس
  */
-class UserBase extends Authenticatable
+class UserBase extends Authenticatable implements HasName // Implement HasName
 {
     //استفاده از قابلیت های فرا خوانده شده
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
@@ -66,6 +67,25 @@ class UserBase extends Authenticatable
     public function isStudent(): bool
     {
         return $this->role === self::ROLE_STUDENT;
+    }
+
+    /**
+     * Find the user instance for the given username.
+     *
+     * @param  string  $username
+     * @return \App\Models\UserBase|null
+     */
+    public function findForPassport($username)
+    {
+        return $this->where('username', $username)->first();
+    }
+
+    /**
+     * Get the user's display name for Filament.
+     */
+    public function getFilamentName(): string
+    {
+        return $this->username;
     }
 
     /**
