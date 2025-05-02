@@ -8,7 +8,6 @@
     <title>آزاد</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black min-h-screen font-vazir">
     <div x-data="{ isOpen: false }" class="relative">
@@ -125,59 +124,19 @@
 
             <!-- News Slider -->
             <div class="mb-12">
-                <livewire:slider
-                    type="khabar"
+                <livewire:slider lazy
+                    type="news"
                     title="آخرین اخبار"
                     viewAllLink="/khabar"
-                    :items="[
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'برگزاری همایش بین‌المللی فناوری‌های نوین',
-                            'description' => 'همایش بین‌المللی فناوری‌های نوین با حضور اساتید برجسته داخلی و خارجی در دانشگاه آزاد اسلامی برگزار می‌شود.',
-                            'link' => '/khabar/1'
-                        ],
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'افتتاح مرکز نوآوری و شتاب‌دهی',
-                            'description' => 'مرکز نوآوری و شتاب‌دهی دانشگاه آزاد اسلامی با هدف حمایت از استارتاپ‌های دانشجویی افتتاح شد.',
-                            'link' => '/khabar/2'
-                        ],
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'کسب رتبه برتر در رتبه‌بندی جهانی',
-                            'description' => 'دانشگاه آزاد اسلامی موفق به کسب رتبه برتر در میان دانشگاه‌های جهان در حوزه تحقیقات و نوآوری شد.',
-                            'link' => '/khabar/3'
-                        ]
-                    ]"
                 />
             </div>
 
             <!-- Announcements Slider -->
             <div>
-                <livewire:slider
-                    type="etelaiie"
+                <livewire:slider lazy
+                    type="event"
                     title="اطلاعیه‌های مهم"
                     viewAllLink="/etelaiie"
-                    :items="[
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'شروع ثبت‌نام ترم تابستان',
-                            'description' => 'ثبت‌نام ترم تابستان از تاریخ 15 تیر ماه آغاز می‌شود. دانشجویان گرامی می‌توانند با مراجعه به سامانه آموزشیار نسبت به انتخاب واحد اقدام نمایند.',
-                            'link' => '/etelaiie/1'
-                        ],
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'برگزاری دوره‌های مهارت‌افزایی',
-                            'description' => 'دوره‌های مهارت‌افزایی در رشته‌های مختلف با همکاری صنعت برگزار می‌شود. علاقه‌مندان می‌توانند از طریق سامانه آموزشیار ثبت‌نام کنند.',
-                            'link' => '/etelaiie/2'
-                        ],
-                        [
-                            'image' => 'https://via.placeholder.com/800x400',
-                            'title' => 'تقویم آموزشی نیمسال جدید',
-                            'description' => 'تقویم آموزشی نیمسال جدید شامل تاریخ‌های مهم ثبت‌نام، حذف و اضافه، امتحانات میان‌ترم و پایان‌ترم منتشر شد.',
-                            'link' => '/etelaiie/3'
-                        ]
-                    ]"
                 />
             </div>
         </main>

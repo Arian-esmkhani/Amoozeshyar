@@ -8,7 +8,6 @@
     <title>آموزش یار</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black min-h-screen font-vazir">
     <div class="min-h-screen flex flex-col">
@@ -18,59 +17,35 @@
 
         <main class="flex-grow container mx-auto px-4 pt-24 pb-12">
         <livewire:amoozeshyar :userRole="$userRole"/>
-        
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {{-- بخش نمایش اسلایدر اخبار --}}
                 <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 backdrop-blur-sm border border-gray-800 shadow-2xl p-6">
                     <div class="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
                     <div class="relative">
+                        {{-- عنوان بخش --}}
                         <h2 class="text-xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">خبرها</h2>
-                        <x-slider type="khabar" title="خبرها" viewAllLink="/khabar" :items="[
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'خبر یک',
-                                'description' => 'این خبر به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/khabar/1'
-                            ],
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'خبر دو',
-                                'description' => 'این خبر به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/khabar/2'
-                            ],
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'خبر سه',
-                                'description' => 'این خبر به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/khabar/3'
-                            ]
-                        ]" />
+                        {{-- استفاده از کامپوننت لایووایر اسلایدر برای نوع 'news' با بارگذاری تنبل --}}
+                        <livewire:slider lazy
+                            type="news"
+                            title="آخرین اخبار"
+                            viewAllLink="/khabar"
+                        />
                     </div>
                 </div>
 
+                {{-- بخش نمایش اسلایدر اطلاعیه‌ها --}}
                 <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 backdrop-blur-sm border border-gray-800 shadow-2xl p-6">
                     <div class="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
                     <div class="relative">
+                         {{-- عنوان بخش --}}
                         <h2 class="text-xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">اطلاعیه‌ها</h2>
-                        <x-slider type="etelaiie" title="اطلاعیه ها" viewAllLink="/etelaiie" :items="[
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'اطلاعیه یک',
-                                'description' => 'این اطلاعیه به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/etelaiie/1'
-                            ],
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'اطلاعیه دو',
-                                'description' => 'این اطلاعیه به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/etelaiie/2'
-                            ],
-                            [
-                                'image' => 'https://via.placeholder.com/150',
-                                'title' => 'اطلاعیه سه',
-                                'description' => 'این اطلاعیه به صورت متنی و جذاب در اینجا قرار میگیرد',
-                                'link' => '/etelaiie/3'
-                            ]
-                        ]" />
+                         {{-- استفاده از کامپوننت لایووایر اسلایدر برای نوع 'event' با بارگذاری تنبل --}}
+                        <livewire:slider lazy
+                            type="event"
+                            title="اطلاعیه‌های مهم"
+                            viewAllLink="/etelaiie"
+                        />
                     </div>
                 </div>
             </div>
