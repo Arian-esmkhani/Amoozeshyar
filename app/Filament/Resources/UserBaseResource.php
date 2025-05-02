@@ -11,6 +11,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Filament\Forms\Components\Select;
 
 /**
  * کلاس منبع (Resource) مدیریت کاربران پایه سیستم
@@ -78,20 +80,27 @@ class UserBaseResource extends Resource
                 Forms\Components\TextInput::make('username')
                     ->required()
                     ->maxLength(45),
-                // رمز عبور - اجباری، حداکثر 255 کاراکتر
+                // رمز عبور - اجباری فقط در زمان ایجاد، حداکثر 255 کاراکتر، هش شده
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required()
-                    ->maxLength(255),
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->maxLength(255)
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->dehydrateStateUsing(fn (string $state): string => Hash::make($state)),
                 // ایمیل - اجباری، حداکثر 45 کاراکتر
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(45),
                 // نقش کاربر - اجباری، حداکثر 30 کاراکتر
-                Forms\Components\TextInput::make('role')
-                    ->required()
-                    ->maxLength(30),
+                Forms\Components\Select::make('role')
+                    ->options([
+                        'admin' => 'Admin',
+                        'student' => 'Student',
+                        'teacher' => 'Teacher',
+                    ])
+                    ->native(false)
+                    ->required(),
             ]);
     }
 

@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Select;
 
 class UserDataResource extends Resource
 {
@@ -37,9 +38,11 @@ class UserDataResource extends Resource
                     ->maxLength(10),
                 Forms\Components\DatePicker::make('birth_date')
                     ->required(),
-                Forms\Components\TextInput::make('gender')
-                    ->required()
-                    ->maxLength(10),
+                Forms\Components\Select::make('gender')
+                    ->options([
+                        'male' => 'Male',
+                        'female' => 'Female',
+                    ]),
                 Forms\Components\TextInput::make('religion')
                     ->maxLength(20),
                 Forms\Components\TextInput::make('denomination')

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 
 /**
  * کلاس منبع (Resource) مدیریت اسلایدرهای سایت
@@ -29,12 +30,12 @@ class SliderResource extends Resource
     /**
      * عنوان نمایشی در منوی ناوبری
      */
-    protected static ?string $navigationLabel = 'اسلایدرها';
+    protected static ?string $navigationLabel = 'sliders';
 
     /**
      * برچسب مدل در رابط کاربری
      */
-    protected static ?string $modelLabel = 'اسلایدر';
+    protected static ?string $modelLabel = 'slider';
 
     /**
      * تعریف ساختار فرم برای ایجاد و ویرایش اسلایدر
@@ -75,6 +76,13 @@ class SliderResource extends Resource
                 Forms\Components\Toggle::make('is_active')
                     ->label('فعال')
                     ->required(),
+                Forms\Components\Select::make('type')
+                    ->options([
+                        'news' => 'news',
+                        'event' => 'event',
+                    ])
+                    ->native(false)
+                    ->required(),
             ]);
     }
 
@@ -103,6 +111,9 @@ class SliderResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('فعال')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('type')
+                    ->label('نوع')
+                    ->sortable(),
                 // تاریخ ایجاد - قابل مخفی کردن
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاریخ ایجاد')

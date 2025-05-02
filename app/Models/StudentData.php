@@ -20,9 +20,14 @@ class StudentData extends Model
     protected $fillable = [
         'user_id',
         'enrollment_date',
+        'expected_graduation',
+        'konkoor_number',
+        'helf_date',
         'student_number',
+        'study_type',
         'degree_level',
-        'major'
+        'major',
+        'faculty'
     ];
 
     //کاست کردن فیلد ها
