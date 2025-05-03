@@ -154,12 +154,12 @@ class Slider extends Component
         if ($index >= 0 && $index < $itemCount) {
             $oldSlide = $this->currentSlide;
             if ($oldSlide !== $index) { // فقط اگر اندیس واقعا تغییر کند لاگ کن
-                $this->currentSlide = $index;
+        $this->currentSlide = $index;
                 Log::info("[Slider {$this->type}] goToSlide: {$oldSlide} -> {$this->currentSlide}"); // لاگ کردن تغییر
             }
         } else {
             Log::warning("[Slider {$this->type}] goToSlide called with invalid index: {$index}");
-        }
+    }
     }
 
     /**
@@ -180,7 +180,7 @@ class Slider extends Component
              Log::warning("[Slider {$this->type}] currentSlide index {$this->currentSlide} out of bounds, resetting to 0.");
              $this->currentSlide = 0;
              return $items[0];
-        }
+    }
         return null; // اگر هیچ آیتمی وجود ندارد
     }
 

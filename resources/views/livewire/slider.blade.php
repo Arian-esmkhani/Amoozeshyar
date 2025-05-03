@@ -14,11 +14,11 @@
             @if($itemCount > 0)
                 <a href="{{ $viewAllLink }}"
                    class="text-purple-400 hover:text-purple-300 transition-colors text-sm font-medium flex items-center">
-                    مشاهده همه
+            مشاهده همه
                     <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
-                </a>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+        </a>
             @endif
         </div>
     </div>
@@ -37,10 +37,10 @@
     <div wire:loading.remove>
         @if($itemCount > 0)
             {{-- محفظه اصلی با دکمه های چپ/راست --}}
-            <div class="relative">
+        <div class="relative">
                 {{-- محفظه اسلایدها با overflow-hidden --}}
                 <div class="relative h-[400px] md:h-[350px] overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/70 backdrop-blur-md border border-gray-700/50 shadow-xl">
-                    @foreach ($items as $index => $item)
+            @foreach ($items as $index => $item)
                         @if ($currentSlide === $index)
                             <div wire:key="slide-{{ $type }}-{{ $item['id'] ?? $index }}"
                                  class="h-full w-full">
@@ -50,26 +50,26 @@
                                         <img src="{{ $item['image_url'] ?? asset('images/placeholder.png') }}"
                                              alt="{{ $item['title'] }}"
                                              class="w-full h-full object-cover">
-                                    </div>
+                    </div>
                                     {{-- بخش محتوا با استایل بهتر --}}
                                     <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center bg-gradient-to-t md:bg-gradient-to-l from-gray-900/80 via-gray-900/60 to-transparent">
                                         <h3 class="text-xl lg:text-2xl font-semibold text-white mb-3 leading-tight">{{ $item['title'] }}</h3>
                                         <p class="text-gray-300 text-sm lg:text-base mb-5 line-clamp-3 md:line-clamp-4">{{ $item['description'] }}</p>
                                         @if(!empty($item['link']))
-                                            <a href="{{ $item['link'] }}"
+                            <a href="{{ $item['link'] }}"
                                                class="inline-flex items-center self-start text-purple-400 hover:text-purple-300 font-medium transition-colors mt-auto text-sm">
-                                                ادامه مطلب
+                                ادامه مطلب
                                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                                                </svg>
-                                            </a>
+                                </svg>
+                            </a>
                                         @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
+                        </div>
+                    </div>
                 </div>
+                        @endif
+            @endforeach
+        </div>
 
                 {{-- دکمه‌های ناوبری چپ/راست --}}
                 @if($itemCount > 1)
@@ -77,28 +77,28 @@
                     <button wire:click="previousSlide" aria-label="اسلاید قبلی"
                             class="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 z-10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
+        </button>
                     {{-- دکمه بعدی --}}
                     <button wire:click="nextSlide" aria-label="اسلاید بعدی"
                             class="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 z-10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
+        </button>
                 @endif
             </div>
 
             {{-- نقاط ناوبری (خارج از محفظه اصلی اسلایدر) --}}
             @if($itemCount > 1)
                 <div class="flex justify-center items-center space-x-3 mt-4 z-10">
-                    @foreach ($items as $index => $item)
-                        <button wire:click="goToSlide({{ $index }})"
+            @foreach ($items as $index => $item)
+                <button wire:click="goToSlide({{ $index }})"
                                 aria-label="رفتن به اسلاید {{ $index + 1 }}"
                                 class="flex-shrink-0 rounded-full transition-all duration-300 ease-in-out focus:outline-none
                                        {{ $currentSlide === $index
                                           ? 'w-5 h-2.5 bg-purple-500'
                                           : 'w-2.5 h-2.5 bg-gray-500/60 hover:bg-gray-400/60' }}">
-                        </button>
-                    @endforeach
-                </div>
+                </button>
+            @endforeach
+        </div>
             @endif
         @else
             {{-- پیغام عدم وجود آیتم --}}
