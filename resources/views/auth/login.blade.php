@@ -37,14 +37,6 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center">
-                        <input id="remember_me" name="remember" type="checkbox"
-                            class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-700 rounded bg-gray-800/50">
-                        <label for="remember_me" class="mr-2 block text-sm text-gray-300">
-                            مرا به خاطر بسپار
-                        </label>
-                    </div>
-
                     <div>
                         <button type="submit"
                             class="group relative w-full flex justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-500 hover:to-blue-400 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-purple-500/25">

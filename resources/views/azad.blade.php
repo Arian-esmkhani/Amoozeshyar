@@ -104,20 +104,9 @@
                         <p class="text-gray-300 text-lg mb-8 leading-relaxed">
                             بزرگ‌ترین دانشگاه حضوری جهان، پیشگام در آموزش و پژوهش
                         </p>
-                        <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                            <a href="#" class="btn-primary">
-                                شروع یادگیری
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                                </svg>
-                            </a>
-                            <a href="#" class="btn-secondary">
-                                درباره ما
-                            </a>
-                        </div>
                     </div>
                     <div class="md:w-1/2">
-                        <img src="/images/university.png" alt="University" class="w-full max-w-lg mx-auto">
+                        <img src="{{ asset('images/azad1.jpg') }}" alt="University" class="w-full max-w-lg mx-auto">
                     </div>
                 </div>
             </div>
@@ -149,6 +138,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     @livewireScripts
-    <x-chat-button :isOnline="true" />
 </body>
 </html>

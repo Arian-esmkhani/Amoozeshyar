@@ -60,6 +60,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     @livewireScripts
-    <x-chat-button :isOnline="true" />
 </body>
 </html>
