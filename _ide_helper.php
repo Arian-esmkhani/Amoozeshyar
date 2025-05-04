@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 12.3.0.
+ * Generated for Laravel 12.11.1.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -2417,7 +2417,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Get the currently authenticated user.
          *
-         * @return \App\Models\User|null 
+         * @return \App\Models\UserBase|null 
          * @static 
          */
         public static function user()
@@ -2455,7 +2455,7 @@ namespace Illuminate\Support\Facades {
          * Log the given user ID into the application without sessions or cookies.
          *
          * @param mixed $id
-         * @return \App\Models\User|false 
+         * @return \App\Models\UserBase|false 
          * @static 
          */
         public static function onceUsingId($id)
@@ -2541,7 +2541,7 @@ namespace Illuminate\Support\Facades {
          *
          * @param mixed $id
          * @param bool $remember
-         * @return \App\Models\User|false 
+         * @return \App\Models\UserBase|false 
          * @static 
          */
         public static function loginUsingId($id, $remember = false)
@@ -2596,7 +2596,7 @@ namespace Illuminate\Support\Facades {
          * The application must be using the AuthenticateSession middleware.
          *
          * @param string $password
-         * @return \App\Models\User|null 
+         * @return \App\Models\UserBase|null 
          * @throws \Illuminate\Auth\AuthenticationException
          * @static 
          */
@@ -2622,7 +2622,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Get the last user we attempted to authenticate.
          *
-         * @return \App\Models\User 
+         * @return \App\Models\UserBase 
          * @static 
          */
         public static function getLastAttempted()
@@ -2746,7 +2746,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Return the currently cached user.
          *
-         * @return \App\Models\User|null 
+         * @return \App\Models\UserBase|null 
          * @static 
          */
         public static function getUser()
@@ -2808,7 +2808,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Determine if the current user is authenticated. If not, throw an exception.
          *
-         * @return \App\Models\User 
+         * @return \App\Models\UserBase 
          * @throws \Illuminate\Auth\AuthenticationException
          * @static 
          */
@@ -3943,6 +3943,30 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Allow dispatching after responses.
+         *
+         * @return \Illuminate\Bus\Dispatcher 
+         * @static 
+         */
+        public static function withDispatchingAfterResponses()
+        {
+            /** @var \Illuminate\Bus\Dispatcher $instance */
+            return $instance->withDispatchingAfterResponses();
+        }
+
+        /**
+         * Disable dispatching after responses.
+         *
+         * @return \Illuminate\Bus\Dispatcher 
+         * @static 
+         */
+        public static function withoutDispatchingAfterResponses()
+        {
+            /** @var \Illuminate\Bus\Dispatcher $instance */
+            return $instance->withoutDispatchingAfterResponses();
+        }
+
+        /**
          * Specify the jobs that should be dispatched instead of faked.
          *
          * @param array|string $jobsToDispatch
@@ -4372,6 +4396,19 @@ namespace Illuminate\Support\Facades {
         {
             /** @var \Illuminate\Cache\CacheManager $instance */
             return $instance->driver($driver);
+        }
+
+        /**
+         * Get a memoized cache driver instance.
+         *
+         * @param string|null $driver
+         * @return \Illuminate\Contracts\Cache\Repository 
+         * @static 
+         */
+        public static function memo($driver = null)
+        {
+            /** @var \Illuminate\Cache\CacheManager $instance */
+            return $instance->memo($driver);
         }
 
         /**
@@ -5084,7 +5121,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function lock($name, $seconds = 0, $owner = null)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             return $instance->lock($name, $seconds, $owner);
         }
 
@@ -5098,21 +5135,8 @@ namespace Illuminate\Support\Facades {
          */
         public static function restoreLock($name, $owner)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             return $instance->restoreLock($name, $owner);
-        }
-
-        /**
-         * Remove an item from the cache if it is expired.
-         *
-         * @param string $key
-         * @return bool 
-         * @static 
-         */
-        public static function forgetIfExpired($key)
-        {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->forgetIfExpired($key);
         }
 
         /**
@@ -5123,33 +5147,82 @@ namespace Illuminate\Support\Facades {
          */
         public static function flush()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             return $instance->flush();
         }
 
         /**
-         * Get the underlying database connection.
+         * Remove all expired tag set entries.
          *
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return void 
          * @static 
          */
-        public static function getConnection()
+        public static function flushStaleTags()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->getConnection();
+            /** @var \Illuminate\Cache\RedisStore $instance */
+            $instance->flushStaleTags();
+        }
+
+        /**
+         * Get the Redis connection instance.
+         *
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @static 
+         */
+        public static function connection()
+        {
+            /** @var \Illuminate\Cache\RedisStore $instance */
+            return $instance->connection();
+        }
+
+        /**
+         * Get the Redis connection instance that should be used to manage locks.
+         *
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @static 
+         */
+        public static function lockConnection()
+        {
+            /** @var \Illuminate\Cache\RedisStore $instance */
+            return $instance->lockConnection();
+        }
+
+        /**
+         * Specify the name of the connection that should be used to store data.
+         *
+         * @param string $connection
+         * @return void 
+         * @static 
+         */
+        public static function setConnection($connection)
+        {
+            /** @var \Illuminate\Cache\RedisStore $instance */
+            $instance->setConnection($connection);
         }
 
         /**
          * Specify the name of the connection that should be used to manage locks.
          *
-         * @param \Illuminate\Database\ConnectionInterface $connection
-         * @return \Illuminate\Cache\DatabaseStore 
+         * @param string $connection
+         * @return \Illuminate\Cache\RedisStore 
          * @static 
          */
         public static function setLockConnection($connection)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             return $instance->setLockConnection($connection);
+        }
+
+        /**
+         * Get the Redis database instance.
+         *
+         * @return \Illuminate\Contracts\Redis\Factory 
+         * @static 
+         */
+        public static function getRedis()
+        {
+            /** @var \Illuminate\Cache\RedisStore $instance */
+            return $instance->getRedis();
         }
 
         /**
@@ -5160,7 +5233,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function getPrefix()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             return $instance->getPrefix();
         }
 
@@ -5173,7 +5246,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function setPrefix($prefix)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\RedisStore $instance */
             $instance->setPrefix($prefix);
         }
 
@@ -5840,7 +5913,7 @@ namespace Illuminate\Support\Facades {
          * Build a database connection instance from the given configuration.
          *
          * @param array $config
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function build($config)
@@ -5867,7 +5940,7 @@ namespace Illuminate\Support\Facades {
          * @param string $name
          * @param array $config
          * @param bool $force
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function connectUsing($name, $config, $force = false)
@@ -6117,19 +6190,70 @@ namespace Illuminate\Support\Facades {
          */
         public static function getDriverTitle()
         {
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getDriverTitle();
+        }
+
+        /**
+         * Run an insert statement against the database.
+         *
+         * @param string $query
+         * @param array $bindings
+         * @param string|null $sequence
+         * @return bool 
+         * @static 
+         */
+        public static function insert($query, $bindings = [], $sequence = null)
+        {
+            /** @var \Illuminate\Database\MySqlConnection $instance */
+            return $instance->insert($query, $bindings, $sequence);
+        }
+
+        /**
+         * Get the connection's last insert ID.
+         *
+         * @return string|int|null 
+         * @static 
+         */
+        public static function getLastInsertId()
+        {
+            /** @var \Illuminate\Database\MySqlConnection $instance */
+            return $instance->getLastInsertId();
+        }
+
+        /**
+         * Determine if the connected database is a MariaDB database.
+         *
+         * @return bool 
+         * @static 
+         */
+        public static function isMaria()
+        {
+            /** @var \Illuminate\Database\MySqlConnection $instance */
+            return $instance->isMaria();
+        }
+
+        /**
+         * Get the server version for the connection.
+         *
+         * @return string 
+         * @static 
+         */
+        public static function getServerVersion()
+        {
+            /** @var \Illuminate\Database\MySqlConnection $instance */
+            return $instance->getServerVersion();
         }
 
         /**
          * Get a schema builder instance for the connection.
          *
-         * @return \Illuminate\Database\Schema\SQLiteBuilder 
+         * @return \Illuminate\Database\Schema\MySqlBuilder 
          * @static 
          */
         public static function getSchemaBuilder()
         {
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getSchemaBuilder();
         }
 
@@ -6138,12 +6262,12 @@ namespace Illuminate\Support\Facades {
          *
          * @param \Illuminate\Filesystem\Filesystem|null $files
          * @param callable|null $processFactory
-         * @throws \RuntimeException
+         * @return \Illuminate\Database\Schema\MySqlSchemaState 
          * @static 
          */
         public static function getSchemaState($files = null, $processFactory = null)
         {
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getSchemaState($files, $processFactory);
         }
 
@@ -6156,7 +6280,7 @@ namespace Illuminate\Support\Facades {
         public static function useDefaultQueryGrammar()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->useDefaultQueryGrammar();
         }
 
@@ -6169,7 +6293,7 @@ namespace Illuminate\Support\Facades {
         public static function useDefaultSchemaGrammar()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->useDefaultSchemaGrammar();
         }
 
@@ -6182,7 +6306,7 @@ namespace Illuminate\Support\Facades {
         public static function useDefaultPostProcessor()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->useDefaultPostProcessor();
         }
 
@@ -6197,7 +6321,7 @@ namespace Illuminate\Support\Facades {
         public static function table($table, $as = null)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->table($table, $as);
         }
 
@@ -6210,7 +6334,7 @@ namespace Illuminate\Support\Facades {
         public static function query()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->query();
         }
 
@@ -6226,7 +6350,7 @@ namespace Illuminate\Support\Facades {
         public static function selectOne($query, $bindings = [], $useReadPdo = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->selectOne($query, $bindings, $useReadPdo);
         }
 
@@ -6243,7 +6367,7 @@ namespace Illuminate\Support\Facades {
         public static function scalar($query, $bindings = [], $useReadPdo = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->scalar($query, $bindings, $useReadPdo);
         }
 
@@ -6258,7 +6382,7 @@ namespace Illuminate\Support\Facades {
         public static function selectFromWriteConnection($query, $bindings = [])
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->selectFromWriteConnection($query, $bindings);
         }
 
@@ -6274,7 +6398,7 @@ namespace Illuminate\Support\Facades {
         public static function select($query, $bindings = [], $useReadPdo = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->select($query, $bindings, $useReadPdo);
         }
 
@@ -6290,7 +6414,7 @@ namespace Illuminate\Support\Facades {
         public static function selectResultSets($query, $bindings = [], $useReadPdo = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->selectResultSets($query, $bindings, $useReadPdo);
         }
 
@@ -6306,23 +6430,8 @@ namespace Illuminate\Support\Facades {
         public static function cursor($query, $bindings = [], $useReadPdo = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->cursor($query, $bindings, $useReadPdo);
-        }
-
-        /**
-         * Run an insert statement against the database.
-         *
-         * @param string $query
-         * @param array $bindings
-         * @return bool 
-         * @static 
-         */
-        public static function insert($query, $bindings = [])
-        {
-            //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
-            return $instance->insert($query, $bindings);
         }
 
         /**
@@ -6336,7 +6445,7 @@ namespace Illuminate\Support\Facades {
         public static function update($query, $bindings = [])
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->update($query, $bindings);
         }
 
@@ -6351,7 +6460,7 @@ namespace Illuminate\Support\Facades {
         public static function delete($query, $bindings = [])
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->delete($query, $bindings);
         }
 
@@ -6366,7 +6475,7 @@ namespace Illuminate\Support\Facades {
         public static function statement($query, $bindings = [])
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->statement($query, $bindings);
         }
 
@@ -6381,7 +6490,7 @@ namespace Illuminate\Support\Facades {
         public static function affectingStatement($query, $bindings = [])
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->affectingStatement($query, $bindings);
         }
 
@@ -6395,7 +6504,7 @@ namespace Illuminate\Support\Facades {
         public static function unprepared($query)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->unprepared($query);
         }
 
@@ -6408,7 +6517,7 @@ namespace Illuminate\Support\Facades {
         public static function threadCount()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->threadCount();
         }
 
@@ -6422,7 +6531,7 @@ namespace Illuminate\Support\Facades {
         public static function pretend($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->pretend($callback);
         }
 
@@ -6436,7 +6545,7 @@ namespace Illuminate\Support\Facades {
         public static function withoutPretending($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->withoutPretending($callback);
         }
 
@@ -6451,7 +6560,7 @@ namespace Illuminate\Support\Facades {
         public static function bindValues($statement, $bindings)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->bindValues($statement, $bindings);
         }
 
@@ -6465,7 +6574,7 @@ namespace Illuminate\Support\Facades {
         public static function prepareBindings($bindings)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->prepareBindings($bindings);
         }
 
@@ -6481,7 +6590,7 @@ namespace Illuminate\Support\Facades {
         public static function logQuery($query, $bindings, $time = null)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->logQuery($query, $bindings, $time);
         }
 
@@ -6496,7 +6605,7 @@ namespace Illuminate\Support\Facades {
         public static function whenQueryingForLongerThan($threshold, $handler)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->whenQueryingForLongerThan($threshold, $handler);
         }
 
@@ -6509,7 +6618,7 @@ namespace Illuminate\Support\Facades {
         public static function allowQueryDurationHandlersToRunAgain()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->allowQueryDurationHandlersToRunAgain();
         }
 
@@ -6522,7 +6631,7 @@ namespace Illuminate\Support\Facades {
         public static function totalQueryDuration()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->totalQueryDuration();
         }
 
@@ -6535,7 +6644,7 @@ namespace Illuminate\Support\Facades {
         public static function resetTotalQueryDuration()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->resetTotalQueryDuration();
         }
 
@@ -6548,7 +6657,7 @@ namespace Illuminate\Support\Facades {
         public static function reconnectIfMissingConnection()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->reconnectIfMissingConnection();
         }
 
@@ -6556,13 +6665,13 @@ namespace Illuminate\Support\Facades {
          * Register a hook to be run just before a database transaction is started.
          *
          * @param \Closure $callback
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function beforeStartingTransaction($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->beforeStartingTransaction($callback);
         }
 
@@ -6570,13 +6679,13 @@ namespace Illuminate\Support\Facades {
          * Register a hook to be run just before a database query is executed.
          *
          * @param \Closure $callback
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function beforeExecuting($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->beforeExecuting($callback);
         }
 
@@ -6590,7 +6699,7 @@ namespace Illuminate\Support\Facades {
         public static function listen($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->listen($callback);
         }
 
@@ -6604,7 +6713,7 @@ namespace Illuminate\Support\Facades {
         public static function raw($value)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->raw($value);
         }
 
@@ -6619,7 +6728,7 @@ namespace Illuminate\Support\Facades {
         public static function escape($value, $binary = false)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->escape($value, $binary);
         }
 
@@ -6632,7 +6741,7 @@ namespace Illuminate\Support\Facades {
         public static function hasModifiedRecords()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->hasModifiedRecords();
         }
 
@@ -6646,7 +6755,7 @@ namespace Illuminate\Support\Facades {
         public static function recordsHaveBeenModified($value = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->recordsHaveBeenModified($value);
         }
 
@@ -6654,13 +6763,13 @@ namespace Illuminate\Support\Facades {
          * Set the record modification state.
          *
          * @param bool $value
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setRecordModificationState($value)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setRecordModificationState($value);
         }
 
@@ -6673,7 +6782,7 @@ namespace Illuminate\Support\Facades {
         public static function forgetRecordModificationState()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->forgetRecordModificationState();
         }
 
@@ -6681,13 +6790,13 @@ namespace Illuminate\Support\Facades {
          * Indicate that the connection should use the write PDO connection for reads.
          *
          * @param bool $value
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function useWriteConnectionWhenReading($value = true)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->useWriteConnectionWhenReading($value);
         }
 
@@ -6700,7 +6809,7 @@ namespace Illuminate\Support\Facades {
         public static function getPdo()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getPdo();
         }
 
@@ -6713,7 +6822,7 @@ namespace Illuminate\Support\Facades {
         public static function getRawPdo()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getRawPdo();
         }
 
@@ -6726,7 +6835,7 @@ namespace Illuminate\Support\Facades {
         public static function getReadPdo()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getReadPdo();
         }
 
@@ -6739,7 +6848,7 @@ namespace Illuminate\Support\Facades {
         public static function getRawReadPdo()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getRawReadPdo();
         }
 
@@ -6747,13 +6856,13 @@ namespace Illuminate\Support\Facades {
          * Set the PDO connection.
          *
          * @param \PDO|\Closure|null $pdo
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setPdo($pdo)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setPdo($pdo);
         }
 
@@ -6761,13 +6870,13 @@ namespace Illuminate\Support\Facades {
          * Set the PDO connection used for reading.
          *
          * @param \PDO|\Closure|null $pdo
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setReadPdo($pdo)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setReadPdo($pdo);
         }
 
@@ -6780,7 +6889,7 @@ namespace Illuminate\Support\Facades {
         public static function getName()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getName();
         }
 
@@ -6793,7 +6902,7 @@ namespace Illuminate\Support\Facades {
         public static function getNameWithReadWriteType()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getNameWithReadWriteType();
         }
 
@@ -6807,7 +6916,7 @@ namespace Illuminate\Support\Facades {
         public static function getConfig($option = null)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getConfig($option);
         }
 
@@ -6820,7 +6929,7 @@ namespace Illuminate\Support\Facades {
         public static function getDriverName()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getDriverName();
         }
 
@@ -6833,7 +6942,7 @@ namespace Illuminate\Support\Facades {
         public static function getQueryGrammar()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getQueryGrammar();
         }
 
@@ -6841,13 +6950,13 @@ namespace Illuminate\Support\Facades {
          * Set the query grammar used by the connection.
          *
          * @param \Illuminate\Database\Query\Grammars\Grammar $grammar
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setQueryGrammar($grammar)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setQueryGrammar($grammar);
         }
 
@@ -6860,7 +6969,7 @@ namespace Illuminate\Support\Facades {
         public static function getSchemaGrammar()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getSchemaGrammar();
         }
 
@@ -6868,13 +6977,13 @@ namespace Illuminate\Support\Facades {
          * Set the schema grammar used by the connection.
          *
          * @param \Illuminate\Database\Schema\Grammars\Grammar $grammar
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setSchemaGrammar($grammar)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setSchemaGrammar($grammar);
         }
 
@@ -6887,7 +6996,7 @@ namespace Illuminate\Support\Facades {
         public static function getPostProcessor()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getPostProcessor();
         }
 
@@ -6895,13 +7004,13 @@ namespace Illuminate\Support\Facades {
          * Set the query post processor used by the connection.
          *
          * @param \Illuminate\Database\Query\Processors\Processor $processor
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setPostProcessor($processor)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setPostProcessor($processor);
         }
 
@@ -6914,7 +7023,7 @@ namespace Illuminate\Support\Facades {
         public static function getEventDispatcher()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getEventDispatcher();
         }
 
@@ -6922,13 +7031,13 @@ namespace Illuminate\Support\Facades {
          * Set the event dispatcher instance on the connection.
          *
          * @param \Illuminate\Contracts\Events\Dispatcher $events
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setEventDispatcher($events)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setEventDispatcher($events);
         }
 
@@ -6941,7 +7050,7 @@ namespace Illuminate\Support\Facades {
         public static function unsetEventDispatcher()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->unsetEventDispatcher();
         }
 
@@ -6949,13 +7058,13 @@ namespace Illuminate\Support\Facades {
          * Set the transaction manager instance on the connection.
          *
          * @param \Illuminate\Database\DatabaseTransactionsManager $manager
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setTransactionManager($manager)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setTransactionManager($manager);
         }
 
@@ -6968,7 +7077,7 @@ namespace Illuminate\Support\Facades {
         public static function unsetTransactionManager()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->unsetTransactionManager();
         }
 
@@ -6981,7 +7090,7 @@ namespace Illuminate\Support\Facades {
         public static function pretending()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->pretending();
         }
 
@@ -6994,7 +7103,7 @@ namespace Illuminate\Support\Facades {
         public static function getQueryLog()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getQueryLog();
         }
 
@@ -7007,7 +7116,7 @@ namespace Illuminate\Support\Facades {
         public static function getRawQueryLog()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getRawQueryLog();
         }
 
@@ -7020,7 +7129,7 @@ namespace Illuminate\Support\Facades {
         public static function flushQueryLog()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->flushQueryLog();
         }
 
@@ -7033,7 +7142,7 @@ namespace Illuminate\Support\Facades {
         public static function enableQueryLog()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->enableQueryLog();
         }
 
@@ -7046,7 +7155,7 @@ namespace Illuminate\Support\Facades {
         public static function disableQueryLog()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->disableQueryLog();
         }
 
@@ -7059,7 +7168,7 @@ namespace Illuminate\Support\Facades {
         public static function logging()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->logging();
         }
 
@@ -7072,7 +7181,7 @@ namespace Illuminate\Support\Facades {
         public static function getDatabaseName()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getDatabaseName();
         }
 
@@ -7080,13 +7189,13 @@ namespace Illuminate\Support\Facades {
          * Set the name of the connected database.
          *
          * @param string $database
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setDatabaseName($database)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setDatabaseName($database);
         }
 
@@ -7094,13 +7203,13 @@ namespace Illuminate\Support\Facades {
          * Set the read / write type of the connection.
          *
          * @param string|null $readWriteType
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setReadWriteType($readWriteType)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setReadWriteType($readWriteType);
         }
 
@@ -7113,7 +7222,7 @@ namespace Illuminate\Support\Facades {
         public static function getTablePrefix()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->getTablePrefix();
         }
 
@@ -7121,13 +7230,13 @@ namespace Illuminate\Support\Facades {
          * Set the table prefix in use by the connection.
          *
          * @param string $prefix
-         * @return \Illuminate\Database\SQLiteConnection 
+         * @return \Illuminate\Database\MySqlConnection 
          * @static 
          */
         public static function setTablePrefix($prefix)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->setTablePrefix($prefix);
         }
 
@@ -7141,21 +7250,8 @@ namespace Illuminate\Support\Facades {
         public static function withoutTablePrefix($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->withoutTablePrefix($callback);
-        }
-
-        /**
-         * Get the server version for the connection.
-         *
-         * @return string 
-         * @static 
-         */
-        public static function getServerVersion()
-        {
-            //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
-            return $instance->getServerVersion();
         }
 
         /**
@@ -7169,7 +7265,7 @@ namespace Illuminate\Support\Facades {
         public static function resolverFor($driver, $callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            \Illuminate\Database\SQLiteConnection::resolverFor($driver, $callback);
+            \Illuminate\Database\MySqlConnection::resolverFor($driver, $callback);
         }
 
         /**
@@ -7182,7 +7278,7 @@ namespace Illuminate\Support\Facades {
         public static function getResolver($driver)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            return \Illuminate\Database\SQLiteConnection::getResolver($driver);
+            return \Illuminate\Database\MySqlConnection::getResolver($driver);
         }
 
         /**
@@ -7200,7 +7296,7 @@ namespace Illuminate\Support\Facades {
         public static function transaction($callback, $attempts = 1)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->transaction($callback, $attempts);
         }
 
@@ -7214,7 +7310,7 @@ namespace Illuminate\Support\Facades {
         public static function beginTransaction()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->beginTransaction();
         }
 
@@ -7228,7 +7324,7 @@ namespace Illuminate\Support\Facades {
         public static function commit()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->commit();
         }
 
@@ -7243,7 +7339,7 @@ namespace Illuminate\Support\Facades {
         public static function rollBack($toLevel = null)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->rollBack($toLevel);
         }
 
@@ -7256,7 +7352,7 @@ namespace Illuminate\Support\Facades {
         public static function transactionLevel()
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             return $instance->transactionLevel();
         }
 
@@ -7271,7 +7367,7 @@ namespace Illuminate\Support\Facades {
         public static function afterCommit($callback)
         {
             //Method inherited from \Illuminate\Database\Connection 
-            /** @var \Illuminate\Database\SQLiteConnection $instance */
+            /** @var \Illuminate\Database\MySqlConnection $instance */
             $instance->afterCommit($callback);
         }
 
@@ -9127,6 +9223,34 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Create a new PSR-7 response instance for use during stubbing.
+         *
+         * @param array|string|null $body
+         * @param int $status
+         * @param array<string, mixed> $headers
+         * @return \GuzzleHttp\Psr7\Response 
+         * @static 
+         */
+        public static function psr7Response($body = null, $status = 200, $headers = [])
+        {
+            return \Illuminate\Http\Client\Factory::psr7Response($body, $status, $headers);
+        }
+
+        /**
+         * Create a new RequestException instance for use during stubbing.
+         *
+         * @param array|string|null $body
+         * @param int $status
+         * @param array<string, mixed> $headers
+         * @return \Illuminate\Http\Client\RequestException 
+         * @static 
+         */
+        public static function failedRequest($body = null, $status = 200, $headers = [])
+        {
+            return \Illuminate\Http\Client\Factory::failedRequest($body, $status, $headers);
+        }
+
+        /**
          * Create a new connection exception for use during stubbing.
          *
          * @param string|null $message
@@ -9924,13 +10048,14 @@ namespace Illuminate\Support\Facades {
         /**
          * Flush the log context on all currently resolved channels.
          *
+         * @param string[]|null $keys
          * @return \Illuminate\Log\LogManager 
          * @static 
          */
-        public static function withoutContext()
+        public static function withoutContext($keys = null)
         {
             /** @var \Illuminate\Log\LogManager $instance */
-            return $instance->withoutContext();
+            return $instance->withoutContext($keys);
         }
 
         /**
@@ -11478,6 +11603,20 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
+         * Get all of the jobs by listener class, passing an optional truth-test callback.
+         *
+         * @param class-string $listenerClass
+         * @param (\Closure(mixed, \Illuminate\Events\CallQueuedListener, string|null, mixed): bool)|null $callback
+         * @return \Illuminate\Support\Collection<int, \Illuminate\Events\CallQueuedListener> 
+         * @static 
+         */
+        public static function listenersPushed($listenerClass, $callback = null)
+        {
+            /** @var \Illuminate\Support\Testing\Fakes\QueueFake $instance */
+            return $instance->listenersPushed($listenerClass, $callback);
+        }
+
+        /**
          * Determine if there are any stored jobs for a given class.
          *
          * @param string $job
@@ -11684,47 +11823,45 @@ namespace Illuminate\Support\Facades {
         }
 
         /**
-         * Release a reserved job back onto the queue after (n) seconds.
+         * Migrate the delayed jobs that are ready to the regular queue.
          *
-         * @param string $queue
-         * @param \Illuminate\Queue\Jobs\DatabaseJobRecord $job
-         * @param int $delay
-         * @return mixed 
+         * @param string $from
+         * @param string $to
+         * @return array 
          * @static 
          */
-        public static function release($queue, $job, $delay)
+        public static function migrateExpiredJobs($from, $to)
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
-            return $instance->release($queue, $job, $delay);
+            /** @var \Illuminate\Queue\RedisQueue $instance */
+            return $instance->migrateExpiredJobs($from, $to);
         }
 
         /**
          * Delete a reserved job from the queue.
          *
          * @param string $queue
-         * @param string $id
+         * @param \Illuminate\Queue\Jobs\RedisJob $job
          * @return void 
-         * @throws \Throwable
          * @static 
          */
-        public static function deleteReserved($queue, $id)
+        public static function deleteReserved($queue, $job)
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
-            $instance->deleteReserved($queue, $id);
+            /** @var \Illuminate\Queue\RedisQueue $instance */
+            $instance->deleteReserved($queue, $job);
         }
 
         /**
          * Delete a reserved job from the reserved queue and release it.
          *
          * @param string $queue
-         * @param \Illuminate\Queue\Jobs\DatabaseJob $job
+         * @param \Illuminate\Queue\Jobs\RedisJob $job
          * @param int $delay
          * @return void 
          * @static 
          */
         public static function deleteAndRelease($queue, $job, $delay)
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             $instance->deleteAndRelease($queue, $job, $delay);
         }
 
@@ -11737,7 +11874,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function clear($queue)
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->clear($queue);
         }
 
@@ -11750,20 +11887,32 @@ namespace Illuminate\Support\Facades {
          */
         public static function getQueue($queue)
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->getQueue($queue);
         }
 
         /**
-         * Get the underlying database instance.
+         * Get the connection for the queue.
          *
-         * @return \Illuminate\Database\Connection 
+         * @return \Illuminate\Redis\Connections\Connection 
          * @static 
          */
-        public static function getDatabase()
+        public static function getConnection()
         {
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
-            return $instance->getDatabase();
+            /** @var \Illuminate\Queue\RedisQueue $instance */
+            return $instance->getConnection();
+        }
+
+        /**
+         * Get the underlying Redis instance.
+         *
+         * @return \Illuminate\Contracts\Redis\Factory 
+         * @static 
+         */
+        public static function getRedis()
+        {
+            /** @var \Illuminate\Queue\RedisQueue $instance */
+            return $instance->getRedis();
         }
 
         /**
@@ -11776,7 +11925,7 @@ namespace Illuminate\Support\Facades {
         public static function getJobTries($job)
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->getJobTries($job);
         }
 
@@ -11790,7 +11939,7 @@ namespace Illuminate\Support\Facades {
         public static function getJobBackoff($job)
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->getJobBackoff($job);
         }
 
@@ -11804,7 +11953,7 @@ namespace Illuminate\Support\Facades {
         public static function getJobExpiration($job)
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->getJobExpiration($job);
         }
 
@@ -11818,7 +11967,7 @@ namespace Illuminate\Support\Facades {
         public static function createPayloadUsing($callback)
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            \Illuminate\Queue\DatabaseQueue::createPayloadUsing($callback);
+            \Illuminate\Queue\RedisQueue::createPayloadUsing($callback);
         }
 
         /**
@@ -11830,7 +11979,7 @@ namespace Illuminate\Support\Facades {
         public static function getContainer()
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             return $instance->getContainer();
         }
 
@@ -11844,7 +11993,7 @@ namespace Illuminate\Support\Facades {
         public static function setContainer($container)
         {
             //Method inherited from \Illuminate\Queue\Queue 
-            /** @var \Illuminate\Queue\DatabaseQueue $instance */
+            /** @var \Illuminate\Queue\RedisQueue $instance */
             $instance->setContainer($container);
         }
 
@@ -12133,6 +12282,117 @@ namespace Illuminate\Support\Facades {
     /**
      * 
      *
+     */
+    class Redis {
+        /**
+         * Get a Redis connection by name.
+         *
+         * @param string|null $name
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @static 
+         */
+        public static function connection($name = null)
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            return $instance->connection($name);
+        }
+
+        /**
+         * Resolve the given connection by name.
+         *
+         * @param string|null $name
+         * @return \Illuminate\Redis\Connections\Connection 
+         * @throws \InvalidArgumentException
+         * @static 
+         */
+        public static function resolve($name = null)
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            return $instance->resolve($name);
+        }
+
+        /**
+         * Return all of the created connections.
+         *
+         * @return array 
+         * @static 
+         */
+        public static function connections()
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            return $instance->connections();
+        }
+
+        /**
+         * Enable the firing of Redis command events.
+         *
+         * @return void 
+         * @static 
+         */
+        public static function enableEvents()
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            $instance->enableEvents();
+        }
+
+        /**
+         * Disable the firing of Redis command events.
+         *
+         * @return void 
+         * @static 
+         */
+        public static function disableEvents()
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            $instance->disableEvents();
+        }
+
+        /**
+         * Set the default driver.
+         *
+         * @param string $driver
+         * @return void 
+         * @static 
+         */
+        public static function setDriver($driver)
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            $instance->setDriver($driver);
+        }
+
+        /**
+         * Disconnect the given connection and remove from local cache.
+         *
+         * @param string|null $name
+         * @return void 
+         * @static 
+         */
+        public static function purge($name = null)
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            $instance->purge($name);
+        }
+
+        /**
+         * Register a custom driver creator Closure.
+         *
+         * @param string $driver
+         * @param \Closure $callback
+         * @param-closure-this $this  $callback
+         * @return \Illuminate\Redis\RedisManager 
+         * @static 
+         */
+        public static function extend($driver, $callback)
+        {
+            /** @var \Illuminate\Redis\RedisManager $instance */
+            return $instance->extend($driver, $callback);
+        }
+
+            }
+    /**
+     * 
+     *
+     * @method static array|(\Illuminate\Http\UploadedFile|\Illuminate\Http\UploadedFile[]|null file(string|null $key = null, mixed $default = null)
      * @method static array validate(array $rules, ...$params)
      * @method static array validateWithBag(string $errorBag, array $rules, ...$params)
      * @method static bool hasValidSignature(bool $absolute = true)
@@ -14195,7 +14455,7 @@ namespace Illuminate\Support\Facades {
         /**
          * Get an array of all of the files on the request.
          *
-         * @return array 
+         * @return array<string, \Illuminate\Http\UploadedFile|\Illuminate\Http\UploadedFile[]> 
          * @static 
          */
         public static function allFiles()
@@ -14222,7 +14482,7 @@ namespace Illuminate\Support\Facades {
          *
          * @param string|null $key
          * @param mixed $default
-         * @return \Illuminate\Http\UploadedFile|\Illuminate\Http\UploadedFile[]|array|null 
+         * @return ($key is null ? array<string, \Illuminate\Http\UploadedFile|\Illuminate\Http\UploadedFile[]> : \Illuminate\Http\UploadedFile|\Illuminate\Http\UploadedFile[]|null)
          * @static 
          */
         public static function file($key = null, $default = null)
@@ -16047,71 +16307,6 @@ namespace Illuminate\Support\Facades {
      */
     class Schema {
         /**
-         * Create a database in the schema.
-         *
-         * @param string $name
-         * @return bool 
-         * @static 
-         */
-        public static function createDatabase($name)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->createDatabase($name);
-        }
-
-        /**
-         * Drop a database from the schema if the database exists.
-         *
-         * @param string $name
-         * @return bool 
-         * @static 
-         */
-        public static function dropDatabaseIfExists($name)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->dropDatabaseIfExists($name);
-        }
-
-        /**
-         * Get the tables that belong to the connection.
-         *
-         * @param string|string[]|null $schema
-         * @return array 
-         * @static 
-         */
-        public static function getTables($schema = null)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->getTables($schema);
-        }
-
-        /**
-         * Get the views that belong to the connection.
-         *
-         * @param string|string[]|null $schema
-         * @return array 
-         * @static 
-         */
-        public static function getViews($schema = null)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->getViews($schema);
-        }
-
-        /**
-         * Get the columns for a given table.
-         *
-         * @param string $table
-         * @return array 
-         * @static 
-         */
-        public static function getColumns($table)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->getColumns($table);
-        }
-
-        /**
          * Drop all tables from the database.
          *
          * @return void 
@@ -16119,7 +16314,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function dropAllTables()
         {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->dropAllTables();
         }
 
@@ -16131,35 +16326,8 @@ namespace Illuminate\Support\Facades {
          */
         public static function dropAllViews()
         {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->dropAllViews();
-        }
-
-        /**
-         * Get the value for the given pragma name or set the given value.
-         *
-         * @param string $key
-         * @param mixed $value
-         * @return mixed 
-         * @static 
-         */
-        public static function pragma($key, $value = null)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            return $instance->pragma($key, $value);
-        }
-
-        /**
-         * Empty the database file.
-         *
-         * @param string|null $path
-         * @return void 
-         * @static 
-         */
-        public static function refreshDatabaseFile($path = null)
-        {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
-            $instance->refreshDatabaseFile($path);
         }
 
         /**
@@ -16170,7 +16338,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function getCurrentSchemaListing()
         {
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getCurrentSchemaListing();
         }
 
@@ -16184,7 +16352,7 @@ namespace Illuminate\Support\Facades {
         public static function defaultStringLength($length)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::defaultStringLength($length);
+            \Illuminate\Database\Schema\MySqlBuilder::defaultStringLength($length);
         }
 
         /**
@@ -16195,7 +16363,7 @@ namespace Illuminate\Support\Facades {
         public static function defaultTimePrecision($precision)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            return \Illuminate\Database\Schema\SQLiteBuilder::defaultTimePrecision($precision);
+            return \Illuminate\Database\Schema\MySqlBuilder::defaultTimePrecision($precision);
         }
 
         /**
@@ -16209,7 +16377,7 @@ namespace Illuminate\Support\Facades {
         public static function defaultMorphKeyType($type)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::defaultMorphKeyType($type);
+            \Illuminate\Database\Schema\MySqlBuilder::defaultMorphKeyType($type);
         }
 
         /**
@@ -16221,7 +16389,7 @@ namespace Illuminate\Support\Facades {
         public static function morphUsingUuids()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::morphUsingUuids();
+            \Illuminate\Database\Schema\MySqlBuilder::morphUsingUuids();
         }
 
         /**
@@ -16233,19 +16401,47 @@ namespace Illuminate\Support\Facades {
         public static function morphUsingUlids()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::morphUsingUlids();
+            \Illuminate\Database\Schema\MySqlBuilder::morphUsingUlids();
+        }
+
+        /**
+         * Create a database in the schema.
+         *
+         * @param string $name
+         * @return bool 
+         * @static 
+         */
+        public static function createDatabase($name)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
+            return $instance->createDatabase($name);
+        }
+
+        /**
+         * Drop a database from the schema if the database exists.
+         *
+         * @param string $name
+         * @return bool 
+         * @static 
+         */
+        public static function dropDatabaseIfExists($name)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
+            return $instance->dropDatabaseIfExists($name);
         }
 
         /**
          * Get the schemas that belong to the connection.
          *
-         * @return array 
+         * @return \Illuminate\Database\Schema\list<array{name: string, path: string|null, default: bool}>
          * @static 
          */
         public static function getSchemas()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getSchemas();
         }
 
@@ -16259,7 +16455,7 @@ namespace Illuminate\Support\Facades {
         public static function hasTable($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->hasTable($table);
         }
 
@@ -16273,8 +16469,22 @@ namespace Illuminate\Support\Facades {
         public static function hasView($view)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->hasView($view);
+        }
+
+        /**
+         * Get the tables that belong to the connection.
+         *
+         * @param string|string[]|null $schema
+         * @return \Illuminate\Database\Schema\list<array{name: string, schema: string|null, schema_qualified_name: string, size: int|null, comment: string|null, collation: string|null, engine: string|null}>
+         * @static 
+         */
+        public static function getTables($schema = null)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
+            return $instance->getTables($schema);
         }
 
         /**
@@ -16282,27 +16492,41 @@ namespace Illuminate\Support\Facades {
          *
          * @param string|string[]|null $schema
          * @param bool $schemaQualified
-         * @return array 
+         * @return list<string> 
          * @static 
          */
         public static function getTableListing($schema = null, $schemaQualified = true)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getTableListing($schema, $schemaQualified);
+        }
+
+        /**
+         * Get the views that belong to the connection.
+         *
+         * @param string|string[]|null $schema
+         * @return \Illuminate\Database\Schema\list<array{name: string, schema: string|null, schema_qualified_name: string, definition: string}>
+         * @static 
+         */
+        public static function getViews($schema = null)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
+            return $instance->getViews($schema);
         }
 
         /**
          * Get the user-defined types that belong to the connection.
          *
          * @param string|string[]|null $schema
-         * @return array 
+         * @return \Illuminate\Database\Schema\list<array{name: string, schema: string, type: string, type: string, category: string, implicit: bool}>
          * @static 
          */
         public static function getTypes($schema = null)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getTypes($schema);
         }
 
@@ -16317,7 +16541,7 @@ namespace Illuminate\Support\Facades {
         public static function hasColumn($table, $column)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->hasColumn($table, $column);
         }
 
@@ -16325,14 +16549,14 @@ namespace Illuminate\Support\Facades {
          * Determine if the given table has given columns.
          *
          * @param string $table
-         * @param array $columns
+         * @param array<string> $columns
          * @return bool 
          * @static 
          */
         public static function hasColumns($table, $columns)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->hasColumns($table, $columns);
         }
 
@@ -16348,7 +16572,7 @@ namespace Illuminate\Support\Facades {
         public static function whenTableHasColumn($table, $column, $callback)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->whenTableHasColumn($table, $column, $callback);
         }
 
@@ -16364,7 +16588,7 @@ namespace Illuminate\Support\Facades {
         public static function whenTableDoesntHaveColumn($table, $column, $callback)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->whenTableDoesntHaveColumn($table, $column, $callback);
         }
 
@@ -16380,7 +16604,7 @@ namespace Illuminate\Support\Facades {
         public static function getColumnType($table, $column, $fullDefinition = false)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getColumnType($table, $column, $fullDefinition);
         }
 
@@ -16388,27 +16612,41 @@ namespace Illuminate\Support\Facades {
          * Get the column listing for a given table.
          *
          * @param string $table
-         * @return array 
+         * @return list<string> 
          * @static 
          */
         public static function getColumnListing($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getColumnListing($table);
+        }
+
+        /**
+         * Get the columns for a given table.
+         *
+         * @param string $table
+         * @return \Illuminate\Database\Schema\list<array{name: string, type: string, type_name: string, nullable: bool, default: mixed, auto_increment: bool, comment: string|null, generation: array{type: string, expression: string|null}|null}>
+         * @static 
+         */
+        public static function getColumns($table)
+        {
+            //Method inherited from \Illuminate\Database\Schema\Builder 
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
+            return $instance->getColumns($table);
         }
 
         /**
          * Get the indexes for a given table.
          *
          * @param string $table
-         * @return array 
+         * @return \Illuminate\Database\Schema\list<array{name: string, columns: list<string>, type: string, unique: bool, primary: bool}>
          * @static 
          */
         public static function getIndexes($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getIndexes($table);
         }
 
@@ -16416,13 +16654,13 @@ namespace Illuminate\Support\Facades {
          * Get the names of the indexes for a given table.
          *
          * @param string $table
-         * @return array 
+         * @return list<string> 
          * @static 
          */
         public static function getIndexListing($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getIndexListing($table);
         }
 
@@ -16438,7 +16676,7 @@ namespace Illuminate\Support\Facades {
         public static function hasIndex($table, $index, $type = null)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->hasIndex($table, $index, $type);
         }
 
@@ -16452,7 +16690,7 @@ namespace Illuminate\Support\Facades {
         public static function getForeignKeys($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getForeignKeys($table);
         }
 
@@ -16467,7 +16705,7 @@ namespace Illuminate\Support\Facades {
         public static function table($table, $callback)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->table($table, $callback);
         }
 
@@ -16482,7 +16720,7 @@ namespace Illuminate\Support\Facades {
         public static function create($table, $callback)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->create($table, $callback);
         }
 
@@ -16496,7 +16734,7 @@ namespace Illuminate\Support\Facades {
         public static function drop($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->drop($table);
         }
 
@@ -16510,7 +16748,7 @@ namespace Illuminate\Support\Facades {
         public static function dropIfExists($table)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->dropIfExists($table);
         }
 
@@ -16518,14 +16756,14 @@ namespace Illuminate\Support\Facades {
          * Drop columns from a table schema.
          *
          * @param string $table
-         * @param string|array $columns
+         * @param string|array<string> $columns
          * @return void 
          * @static 
          */
         public static function dropColumns($table, $columns)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->dropColumns($table, $columns);
         }
 
@@ -16539,7 +16777,7 @@ namespace Illuminate\Support\Facades {
         public static function dropAllTypes()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->dropAllTypes();
         }
 
@@ -16554,7 +16792,7 @@ namespace Illuminate\Support\Facades {
         public static function rename($from, $to)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->rename($from, $to);
         }
 
@@ -16567,7 +16805,7 @@ namespace Illuminate\Support\Facades {
         public static function enableForeignKeyConstraints()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->enableForeignKeyConstraints();
         }
 
@@ -16580,7 +16818,7 @@ namespace Illuminate\Support\Facades {
         public static function disableForeignKeyConstraints()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->disableForeignKeyConstraints();
         }
 
@@ -16594,7 +16832,7 @@ namespace Illuminate\Support\Facades {
         public static function withoutForeignKeyConstraints($callback)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->withoutForeignKeyConstraints($callback);
         }
 
@@ -16607,7 +16845,7 @@ namespace Illuminate\Support\Facades {
         public static function getCurrentSchemaName()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getCurrentSchemaName();
         }
 
@@ -16622,7 +16860,7 @@ namespace Illuminate\Support\Facades {
         public static function parseSchemaAndTable($reference, $withDefaultSchema = null)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->parseSchemaAndTable($reference, $withDefaultSchema);
         }
 
@@ -16635,7 +16873,7 @@ namespace Illuminate\Support\Facades {
         public static function getConnection()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             return $instance->getConnection();
         }
 
@@ -16649,7 +16887,7 @@ namespace Illuminate\Support\Facades {
         public static function blueprintResolver($resolver)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            /** @var \Illuminate\Database\Schema\SQLiteBuilder $instance */
+            /** @var \Illuminate\Database\Schema\MySqlBuilder $instance */
             $instance->blueprintResolver($resolver);
         }
 
@@ -16665,7 +16903,7 @@ namespace Illuminate\Support\Facades {
         public static function macro($name, $macro)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::macro($name, $macro);
+            \Illuminate\Database\Schema\MySqlBuilder::macro($name, $macro);
         }
 
         /**
@@ -16680,7 +16918,7 @@ namespace Illuminate\Support\Facades {
         public static function mixin($mixin, $replace = true)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::mixin($mixin, $replace);
+            \Illuminate\Database\Schema\MySqlBuilder::mixin($mixin, $replace);
         }
 
         /**
@@ -16693,7 +16931,7 @@ namespace Illuminate\Support\Facades {
         public static function hasMacro($name)
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            return \Illuminate\Database\Schema\SQLiteBuilder::hasMacro($name);
+            return \Illuminate\Database\Schema\MySqlBuilder::hasMacro($name);
         }
 
         /**
@@ -16705,7 +16943,7 @@ namespace Illuminate\Support\Facades {
         public static function flushMacros()
         {
             //Method inherited from \Illuminate\Database\Schema\Builder 
-            \Illuminate\Database\Schema\SQLiteBuilder::flushMacros();
+            \Illuminate\Database\Schema\MySqlBuilder::flushMacros();
         }
 
             }
@@ -25242,6 +25480,1149 @@ namespace Livewire\Features\SupportTesting {
             }
     }
 
+namespace App\Filament\Resources\LessonOfferedResource\Pages {
+    /**
+     * کلاس ایجاد درس ارائه شده
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ایجاد درس ارائه شده جدید
+     * - امکان ثبت اطلاعات درس شامل:
+     *   - انتخاب درس از لیست دروس موجود
+     *   - تعیین استاد درس
+     *   - تعیین ظرفیت کلاس
+     *   - تعیین زمان‌بندی کلاس (روز و ساعت)
+     *   - تعیین نیمسال تحصیلی
+     *   - تنظیم پیش‌نیازها و هم‌نیازها
+     * - اعتبارسنجی داده‌های ورودی
+     * - ذخیره‌سازی اطلاعات درس ارائه شده در دیتابیس
+     * 
+     * نکته: این صفحه توسط مدیران آموزش برای تعریف دروس هر نیمسال استفاده می‌شود
+     *
+     */
+    class CreateLessonOffered {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LessonOfferedResource\Pages\CreateLessonOffered::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش درس ارائه شده
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش اطلاعات درس ارائه شده
+     * - امکان تغییر موارد زیر:
+     *   - تغییر استاد درس
+     *   - تغییر ظرفیت کلاس
+     *   - تغییر زمان‌بندی کلاس
+     *   - تغییر وضعیت درس (فعال/غیرفعال)
+     *   - بروزرسانی پیش‌نیازها و هم‌نیازها
+     * - اعتبارسنجی تغییرات
+     * - ذخیره‌سازی تغییرات در دیتابیس
+     * - امکان حذف درس ارائه شده از طریق دکمه هدر
+     * 
+     * نکته مهم: تغییرات در دروس ارائه شده باید با دقت انجام شود
+     * زیرا ممکن است بر برنامه درسی دانشجویان تأثیر بگذارد
+     *
+     */
+    class EditLessonOffered {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LessonOfferedResource\Pages\EditLessonOffered::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست دروس ارائه شده
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول تمامی دروس ارائه شده در نیمسال‌های تحصیلی
+     * - امکانات مدیریتی شامل:
+     *   - مشاهده اطلاعات کامل هر درس (نام، کد، استاد، ظرفیت و...)
+     *   - فیلتر کردن دروس بر اساس:
+     *     - نیمسال تحصیلی
+     *     - گروه آموزشی
+     *     - استاد
+     *     - وضعیت (فعال/غیرفعال)
+     *   - جستجو در دروس
+     *   - مرتب‌سازی بر اساس فیلدهای مختلف
+     * - امکان ایجاد درس ارائه شده جدید از طریق دکمه هدر
+     * 
+     * نکته: این صفحه ابزار اصلی مدیران آموزش برای مدیریت دروس ارائه شده است
+     *
+     */
+    class ListLessonOffereds {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LessonOfferedResource\Pages\ListLessonOffereds::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Resources\Pages {
+    /**
+     * 
+     *
+     * @property Form $form
+     */
+    class CreateRecord {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Resources\Pages\CreateRecord::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class Page {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Resources\Pages\Page::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     * @property Form $form
+     */
+    class EditRecord {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Resources\Pages\EditRecord::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class ListRecords {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Resources\Pages\ListRecords::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Pages {
+    /**
+     * 
+     *
+     */
+    class Page {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\Page::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class BasePage {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\BasePage::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class SimplePage {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\SimplePage::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class Dashboard {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\Dashboard::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\LoginHistoryResource\Pages {
+    /**
+     * کلاس ایجاد سابقه ورود جدید
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ثبت سابقه ورود جدید
+     * - ثبت اطلاعات ورود کاربر شامل:
+     *   - شناسه کاربر
+     *   - تاریخ و زمان ورود
+     *   - آدرس IP
+     *   - نوع دستگاه و مرورگر
+     *   - وضعیت موفقیت/شکست ورود
+     * 
+     * نکته: معمولاً این کلاس به صورت خودکار توسط سیستم استفاده می‌شود
+     * و نیازی به ایجاد دستی سابقه ورود نیست
+     *
+     * @extends CreateRecord کلاس پایه فیلامنت برای ایجاد رکورد جدید
+     */
+    class CreateLoginHistory {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LoginHistoryResource\Pages\CreateLoginHistory::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش سابقه ورود کاربر
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش سابقه ورود
+     * - امکان تصحیح اطلاعات ثبت شده شامل:
+     *   - زمان ورود و خروج
+     *   - وضعیت ورود
+     *   - دلیل شکست (در صورت وجود)
+     *   - اطلاعات IP و مرورگر
+     * - امکان حذف سابقه ورود از طریق دکمه هدر
+     * 
+     * نکته امنیتی: هرگونه تغییر در سوابق ورود باید با دقت و توسط افراد مجاز انجام شود
+     * زیرا این تغییرات می‌تواند بر گزارش‌های امنیتی تأثیرگذار باشد
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکورد
+     */
+    class EditLoginHistory {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LoginHistoryResource\Pages\EditLoginHistory::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست سوابق ورود کاربران
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول تمامی سوابق ورود کاربران به سیستم
+     * - امکان مشاهده جزئیات هر ورود شامل:
+     *   - زمان ورود و خروج
+     *   - آدرس IP کاربر
+     *   - نوع مرورگر و دستگاه
+     *   - وضعیت موفقیت یا شکست ورود
+     * - امکان فیلتر کردن بر اساس تاریخ، کاربر، وضعیت و...
+     * - امکان جستجو در سوابق
+     * - امکان ایجاد سابقه ورود جدید (معمولاً برای موارد خاص یا تست)
+     * 
+     * نکته: این صفحه برای مدیران سیستم و تیم امنیت جهت بررسی فعالیت‌های کاربران مفید است
+     *
+     */
+    class ListLoginHistories {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\LoginHistoryResource\Pages\ListLoginHistories::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\SliderResource\Pages {
+    /**
+     * کلاس ایجاد اسلایدر جدید
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ایجاد اسلایدر جدید
+     * - مدیریت آپلود تصویر اسلایدر
+     * - اعتبارسنجی اطلاعات ورودی (عنوان، توضیحات، لینک)
+     * - تنظیم ترتیب نمایش و وضعیت فعال/غیرفعال
+     * - ذخیره اطلاعات اسلایدر در پایگاه داده
+     * 
+     * نکته: تصاویر آپلود شده در پوشه 'sliders' ذخیره می‌شوند
+     *
+     * @extends CreateRecord کلاس پایه فیلامنت برای ایجاد رکورد جدید
+     */
+    class CreateSlider {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\SliderResource\Pages\CreateSlider::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش اسلایدر
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش اطلاعات اسلایدر
+     * - امکان تغییر تصویر اسلایدر
+     * - ویرایش عنوان، توضیحات و لینک
+     * - تغییر ترتیب نمایش و وضعیت فعال/غیرفعال
+     * - امکان حذف اسلایدر از طریق دکمه هدر
+     * 
+     * نکته: در صورت تغییر تصویر، فایل قدیمی به صورت خودکار حذف می‌شود
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکورد
+     */
+    class EditSlider {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\SliderResource\Pages\EditSlider::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست اسلایدرها
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول تمام اسلایدرهای موجود
+     * - نمایش پیش‌نمایش تصاویر اسلایدرها
+     * - امکان مرتب‌سازی بر اساس ترتیب نمایش
+     * - فیلتر کردن بر اساس وضعیت فعال/غیرفعال
+     * - جستجو در عناوین و توضیحات اسلایدرها
+     * - امکان ایجاد اسلایدر جدید از طریق دکمه هدر
+     * 
+     * نکته: این صفحه دید کلی از تمام اسلایدرهای سایت را فراهم می‌کند
+     *
+     * @extends ListRecords کلاس پایه فیلامنت برای نمایش لیست رکوردها
+     */
+    class ListSliders {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\SliderResource\Pages\ListSliders::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\StudentDataResource\Pages {
+    /**
+     * 
+     *
+     */
+    class CreateStudentData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\StudentDataResource\Pages\CreateStudentData::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class EditStudentData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\StudentDataResource\Pages\EditStudentData::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class ListStudentData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\StudentDataResource\Pages\ListStudentData::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\TermAccessResource\Pages {
+    /**
+     * کلاس ایجاد دسترسی جدید برای ترم تحصیلی
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم تنظیم دسترسی جدید برای ترم
+     * - اعتبارسنجی تاریخ‌های شروع و پایان دسترسی
+     * - تنظیم پیام‌های نمایشی برای کاربران
+     * - ذخیره تنظیمات دسترسی در پایگاه داده
+     * 
+     * نکته مهم: این بخش برای مدیریت زمان‌بندی دسترسی دانشجویان به ترم‌های تحصیلی استفاده می‌شود
+     *
+     * @extends CreateRecord کلاس پایه فیلامنت برای ایجاد رکورد جدید
+     */
+    class CreateTermAccess {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\TermAccessResource\Pages\CreateTermAccess::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش دسترسی ترم تحصیلی
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش تنظیمات دسترسی ترم
+     * - امکان تغییر تاریخ‌های شروع و پایان دسترسی
+     * - بروزرسانی وضعیت فعال/غیرفعال بودن دسترسی
+     * - ویرایش پیام‌های نمایشی برای کاربران
+     * - امکان حذف دسترسی ترم از طریق دکمه هدر
+     * 
+     * نکته مهم: تغییرات در این بخش مستقیماً بر دسترسی دانشجویان به ترم تأثیر می‌گذارد
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکورد
+     */
+    class EditTermAccess {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\TermAccessResource\Pages\EditTermAccess::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست دسترسی‌های ترم‌های تحصیلی
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول تمام دسترسی‌های تعریف شده برای ترم‌ها
+     * - امکان فیلتر کردن بر اساس وضعیت فعال/غیرفعال
+     * - مرتب‌سازی بر اساس تاریخ شروع و پایان
+     * - نمایش وضعیت فعلی دسترسی هر ترم
+     * - امکان ایجاد دسترسی جدید از طریق دکمه هدر
+     * 
+     * نکته مهم: این صفحه دید کلی از وضعیت دسترسی تمام ترم‌ها را فراهم می‌کند
+     *
+     * @extends ListRecords کلاس پایه فیلامنت برای نمایش لیست رکوردها
+     */
+    class ListTermAccesses {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\TermAccessResource\Pages\ListTermAccesses::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\UserAccountResource\Pages {
+    /**
+     * 
+     *
+     */
+    class CreateUserAccount {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserAccountResource\Pages\CreateUserAccount::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class EditUserAccount {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserAccountResource\Pages\EditUserAccount::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class ListUserAccounts {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserAccountResource\Pages\ListUserAccounts::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\UserBaseResource\Pages {
+    /**
+     * کلاس ایجاد کاربر پایه جدید در سیستم
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ثبت کاربر جدید
+     * - اعتبارسنجی اطلاعات ورودی (نام کاربری، ایمیل، رمز عبور)
+     * - ذخیره اطلاعات کاربر جدید در پایگاه داده
+     * - تنظیم سطح دسترسی و نقش کاربر
+     * 
+     * نکته: این صفحه فقط توسط کاربران ادمین قابل دسترسی است
+     *
+     * @extends CreateRecord کلاس پایه فیلامنت برای ایجاد رکورد جدید
+     */
+    class CreateUserBase {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserBaseResource\Pages\CreateUserBase::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش اطلاعات کاربر پایه
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش اطلاعات کاربر
+     * - اعتبارسنجی تغییرات در اطلاعات کاربر
+     * - بروزرسانی اطلاعات کاربر در پایگاه داده
+     * - امکان حذف کاربر از طریق دکمه هدر
+     * 
+     * نکته امنیتی: فقط کاربران ادمین به این صفحه دسترسی دارند
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکورد
+     */
+    class EditUserBase {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserBaseResource\Pages\EditUserBase::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست کاربران پایه سیستم
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول کاربران سیستم
+     * - امکان جستجو در لیست کاربران
+     * - فیلتر کردن کاربران بر اساس نقش و وضعیت
+     * - مرتب‌سازی بر اساس معیارهای مختلف
+     * - امکان ایجاد کاربر جدید از طریق دکمه هدر
+     * 
+     * نکته امنیتی: فقط کاربران ادمین به این صفحه دسترسی دارند
+     *
+     * @extends ListRecords کلاس پایه فیلامنت برای نمایش لیست رکوردها
+     */
+    class ListUserBases {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserBaseResource\Pages\ListUserBases::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\UserDataResource\Pages {
+    /**
+     * 
+     *
+     */
+    class CreateUserData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserDataResource\Pages\CreateUserData::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class EditUserData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserDataResource\Pages\EditUserData::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class ListUserData {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserDataResource\Pages\ListUserData::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\UserGpaResource\Pages {
+    /**
+     * کلاس ایجاد معدل جدید برای دانشجو
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ثبت معدل جدید
+     * - اعتبارسنجی داده‌های ورودی
+     * - ذخیره اطلاعات معدل در پایگاه داده
+     *
+     * @extends CreateRecord کلاس پایه فیلامنت برای ایجاد رکورد جدید
+     */
+    class CreateUserGpa {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserGpaResource\Pages\CreateUserGpa::modal($name);
+        }
+
+            }
+    /**
+     * کلاس ویرایش معدل دانشجو
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش فرم ویرایش معدل دانشجو
+     * - اعتبارسنجی تغییرات اعمال شده
+     * - بروزرسانی اطلاعات معدل در پایگاه داده
+     * - امکان حذف رکورد معدل از طریق دکمه هدر
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکورد
+     */
+    class EditUserGpa {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserGpaResource\Pages\EditUserGpa::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست معدل‌های دانشجویان
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول معدل‌های تمام دانشجویان
+     * - امکان جستجو و فیلتر کردن معدل‌ها
+     * - مرتب‌سازی بر اساس معیارهای مختلف
+     * - امکان ایجاد رکورد معدل جدید از طریق دکمه هدر
+     *
+     * @extends ListRecords کلاس پایه فیلامنت برای نمایش لیست رکوردها
+     */
+    class ListUserGpas {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserGpaResource\Pages\ListUserGpas::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Resources\UserStatusResource\Pages {
+    /**
+     * کلاس صفحه ایجاد وضعیت تحصیلی جدید برای دانشجو
+     * 
+     * این کلاس مسئول نمایش و مدیریت فرم ایجاد وضعیت تحصیلی جدید است
+     * از کلاس پایه CreateRecord فیلامنت ارث‌بری می‌کند که امکانات پایه ایجاد رکورد را فراهم می‌کند
+     *
+     */
+    class CreateUserStatus {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserStatusResource\Pages\CreateUserStatus::modal($name);
+        }
+
+            }
+    /**
+     * کلاس مدیریت صفحه ویرایش وضعیت تحصیلی دانشجو
+     * 
+     * این کلاس امکانات زیر را فراهم می‌کند:
+     * - نمایش فرم ویرایش وضعیت تحصیلی
+     * - ذخیره تغییرات اعمال شده
+     * - امکان حذف رکورد از طریق دکمه هدر
+     *
+     * @extends EditRecord کلاس پایه فیلامنت برای ویرایش رکوردها
+     */
+    class EditUserStatus {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserStatusResource\Pages\EditUserStatus::modal($name);
+        }
+
+            }
+    /**
+     * کلاس نمایش لیست وضعیت‌های تحصیلی دانشجویان
+     * 
+     * این کلاس مسئولیت‌های زیر را بر عهده دارد:
+     * - نمایش جدول وضعیت‌های تحصیلی
+     * - امکان جستجو و فیلتر کردن رکوردها
+     * - امکان ایجاد وضعیت تحصیلی جدید از طریق دکمه هدر
+     *
+     * @extends ListRecords کلاس پایه فیلامنت برای نمایش لیست رکوردها
+     */
+    class ListUserStatuses {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Resources\UserStatusResource\Pages\ListUserStatuses::modal($name);
+        }
+
+            }
+    }
+
+namespace App\Filament\Pages {
+    /**
+     * 
+     *
+     */
+    class CustomLogin {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \App\Filament\Pages\CustomLogin::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Pages\Auth {
+    /**
+     * 
+     *
+     * @property Form $form
+     */
+    class Login {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\Auth\Login::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     * @property Form $form
+     */
+    class EditProfile {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Pages\Auth\EditProfile::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Widgets {
+    /**
+     * 
+     *
+     */
+    class AccountWidget {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Widgets\AccountWidget::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class Widget {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Widgets\Widget::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class FilamentInfoWidget {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Widgets\FilamentInfoWidget::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Livewire {
+    /**
+     * 
+     *
+     */
+    class DatabaseNotifications {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Livewire\DatabaseNotifications::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class GlobalSearch {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Livewire\GlobalSearch::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class Notifications {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Livewire\Notifications::modal($name);
+        }
+
+            }
+    }
+
+namespace Filament\Notifications\Livewire {
+    /**
+     * 
+     *
+     */
+    class DatabaseNotifications {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Notifications\Livewire\DatabaseNotifications::modal($name);
+        }
+
+            }
+    /**
+     * 
+     *
+     */
+    class Notifications {
+        /**
+         * 
+         *
+         * @see \Flux\FluxManager::bootModal()
+         * @param mixed $name
+         * @static 
+         */
+        public static function modal($name)
+        {
+            return \Filament\Notifications\Livewire\Notifications::modal($name);
+        }
+
+            }
+    }
+
 namespace Illuminate\View {
     /**
      * 
@@ -25648,6 +27029,58 @@ namespace  {
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
             return $instance->hydrate($items);
+        }
+
+        /**
+         * Insert into the database after merging the model's default attributes, setting timestamps, and casting values.
+         *
+         * @param array<int, array<string, mixed>> $values
+         * @return bool 
+         * @static 
+         */
+        public static function fillAndInsert($values)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->fillAndInsert($values);
+        }
+
+        /**
+         * Insert (ignoring errors) into the database after merging the model's default attributes, setting timestamps, and casting values.
+         *
+         * @param array<int, array<string, mixed>> $values
+         * @return int 
+         * @static 
+         */
+        public static function fillAndInsertOrIgnore($values)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->fillAndInsertOrIgnore($values);
+        }
+
+        /**
+         * Insert a record into the database and get its ID after merging the model's default attributes, setting timestamps, and casting values.
+         *
+         * @param array<string, mixed> $values
+         * @return int 
+         * @static 
+         */
+        public static function fillAndInsertGetId($values)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->fillAndInsertGetId($values);
+        }
+
+        /**
+         * Enrich the given values by merging in the model's default attributes, adding timestamps, and casting values.
+         *
+         * @param array<int, array<string, mixed>> $values
+         * @return array<int, array<string, mixed>> 
+         * @static 
+         */
+        public static function fillForInsert($values)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->fillForInsert($values);
         }
 
         /**
@@ -26207,13 +27640,14 @@ namespace  {
          *
          * @param \Illuminate\Contracts\Database\Query\Expression|array|string $attributes
          * @param mixed $value
+         * @param bool $asConditions
          * @return \Illuminate\Database\Eloquent\Builder<static> 
          * @static 
          */
-        public static function withAttributes($attributes, $value = null)
+        public static function withAttributes($attributes, $value = null, $asConditions = true)
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
-            return $instance->withAttributes($attributes, $value);
+            return $instance->withAttributes($attributes, $value, $asConditions);
         }
 
         /**
@@ -26640,7 +28074,7 @@ namespace  {
         }
 
         /**
-         * Pass the query to a given callback.
+         * Pass the query to a given callback and then return it.
          *
          * @param callable($this):  mixed  $callback
          * @return \Illuminate\Database\Eloquent\Builder<static> 
@@ -26650,6 +28084,20 @@ namespace  {
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
             return $instance->tap($callback);
+        }
+
+        /**
+         * Pass the query to a given callback and return the result.
+         *
+         * @template TReturn
+         * @param (callable($this): TReturn) $callback
+         * @return (TReturn is null|void ? $this : TReturn)
+         * @static 
+         */
+        public static function pipe($callback)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->pipe($callback);
         }
 
         /**
@@ -27206,6 +28654,37 @@ namespace  {
         {
             /** @var \Illuminate\Database\Eloquent\Builder $instance */
             return $instance->orWhereBelongsTo($related, $relationshipName);
+        }
+
+        /**
+         * Add a "belongs to many" relationship where clause to the query.
+         *
+         * @param \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection<int, \Illuminate\Database\Eloquent\Model> $related
+         * @param string|null $relationshipName
+         * @param string $boolean
+         * @return \Illuminate\Database\Eloquent\Builder<static> 
+         * @throws \Illuminate\Database\Eloquent\RelationNotFoundException
+         * @static 
+         */
+        public static function whereAttachedTo($related, $relationshipName = null, $boolean = 'and')
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->whereAttachedTo($related, $relationshipName, $boolean);
+        }
+
+        /**
+         * Add a "belongs to many" relationship with an "or where" clause to the query.
+         *
+         * @param \Illuminate\Database\Eloquent\Model $related
+         * @param string|null $relationshipName
+         * @return \Illuminate\Database\Eloquent\Builder<static> 
+         * @throws \RuntimeException
+         * @static 
+         */
+        public static function orWhereAttachedTo($related, $relationshipName = null)
+        {
+            /** @var \Illuminate\Database\Eloquent\Builder $instance */
+            return $instance->orWhereAttachedTo($related, $relationshipName);
         }
 
         /**
@@ -29269,7 +30748,7 @@ namespace  {
          *
          * @param \Illuminate\Contracts\Database\Query\Expression|\Closure|string $column
          * @param \DateTimeInterface|string|int|float|null $operator
-         * @param \DateTimeInterface|string|int|float|null $value
+         * @param \Illuminate\Contracts\Database\Query\Expression|\DateTimeInterface|string|int|float|null $value
          * @param string $boolean
          * @return \Illuminate\Database\Eloquent\Builder<static> 
          * @static 
@@ -29285,7 +30764,7 @@ namespace  {
          *
          * @param \Illuminate\Contracts\Database\Query\Expression|\Closure|string $column
          * @param \DateTimeInterface|string|int|float|null $operator
-         * @param \DateTimeInterface|string|int|float|null $value
+         * @param \Illuminate\Contracts\Database\Query\Expression|\DateTimeInterface|string|int|float|null $value
          * @return \Illuminate\Database\Eloquent\Builder<static> 
          * @static 
          */
@@ -30060,7 +31539,7 @@ namespace  {
         /**
          * Get the current query value bindings in a flattened array.
          *
-         * @return array 
+         * @return list<mixed> 
          * @static 
          */
         public static function getBindings()
@@ -30072,7 +31551,16 @@ namespace  {
         /**
          * Get the raw array of bindings.
          *
-         * @return array 
+         * @return \Illuminate\Database\Query\array{ select: list<mixed>,
+         *      from: list<mixed>,
+         *      join: list<mixed>,
+         *      where: list<mixed>,
+         *      groupBy: list<mixed>,
+         *      having: list<mixed>,
+         *      order: list<mixed>,
+         *      union: list<mixed>,
+         *      unionOrder: list<mixed>,
+         * }
          * @static 
          */
         public static function getRawBindings()
@@ -30084,6 +31572,7 @@ namespace  {
         /**
          * Set the bindings on the query builder.
          *
+         * @param list<mixed> $bindings
          * @param string $type
          * @return \Illuminate\Database\Eloquent\Builder<static> 
          * @throws \InvalidArgumentException
@@ -30126,6 +31615,7 @@ namespace  {
         /**
          * Merge an array of bindings into our bindings.
          *
+         * @param self $query
          * @return \Illuminate\Database\Eloquent\Builder<static> 
          * @static 
          */
@@ -30138,7 +31628,8 @@ namespace  {
         /**
          * Remove all of the expressions from a list of bindings.
          *
-         * @return array 
+         * @param array<mixed> $bindings
+         * @return list<mixed> 
          * @static 
          */
         public static function cleanBindings($bindings)
@@ -30570,6 +32061,7 @@ namespace  {
     class Password extends \Illuminate\Support\Facades\Password {}
     class Queue extends \Illuminate\Support\Facades\Queue {}
     class Redirect extends \Illuminate\Support\Facades\Redirect {}
+    class Redis extends \Illuminate\Support\Facades\Redis {}
     class Request extends \Illuminate\Support\Facades\Request {}
     class Response extends \Illuminate\Support\Facades\Response {}
     class Route extends \Illuminate\Support\Facades\Route {}

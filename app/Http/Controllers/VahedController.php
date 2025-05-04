@@ -31,10 +31,11 @@ class VahedController extends Controller // تعریف کلاس VahedController 
         $studentSex = UserData::where('user_id', $user->id)->value('gender');
         $passedLesson = UserGpa::where('user_id', $user->id)->value('passed_listen');
 
+
         $data = $this->cacheService->remember(
             "lesson_offered_{$user->id}",
             14400, // زمان انقضای کش (4 ساعت)
-            function () use ($user, $studentMajor, $studentSex, $passedLesson) {
+            function () use ($user, $studentMajor, $studentSex, $passedLesson, ) {
                 // دریافت اطلاعات مرتبط با دانشجو
                 $minMax = UserStatus::where('user_id', $user->id)->select('min_unit', 'max_unit')->first();
                 $userData = UserData::where('user_id', $user->id)->first();
@@ -49,16 +50,24 @@ class VahedController extends Controller // تعریف کلاس VahedController 
                 })
                 ->get()
                 ->filter(function ($lesson) use ($passedLesson) {
-                    // بررسی پیش‌نیازها
-                    if (empty($lesson->prerequisites)) {
-                        return true; // اگر درس پیش‌نیاز ندارد، می‌تواند انتخاب شود
-                    }
+
                     if (empty($passedLesson)) {
                         return false; // اگر درس پیش‌نیاز دارد و دانشجو هیچ درسی را پاس نکرده
                     }
 
-                    $prerequisites = explode(' ', $lesson->prerequisites); // تبدیل پیش‌نیازها به آرایه
-                    $passedLessons = explode(' ', $passedLesson); // تبدیل درس‌های پاس‌شده به آرایه
+                    $lessonsName = explode('_', $lesson->lesten_name); // تبدیلدرس ها به آرایه
+                    $prerequisites = explode('_', $lesson->prerequisites); // تبدیل پیش‌نیازها به آرایه
+                    $passedLessons = explode('_', $passedLesson); // تبدیل درس‌های پاس‌شده به آرایه
+
+                    foreach ($lessonsName as $name ) {
+                        if (in_array($name, $passedLessons)) { // اگر  درس در پاس شده ها باشد
+                            return false;
+                        }
+                    }
+
+                    if (empty($lesson->prerequisites)) {
+                        return true; // اگر درس پیش‌نیاز نداردو پاس نشده است، می‌تواند انتخاب شود
+                    }
 
                     foreach ($prerequisites as $prerequisite) { // حلقه برای بررسی پیش‌نیازها
                         if (!in_array($prerequisite, $passedLessons)) { // اگر یکی از پیش‌نیازها در لیست پاس‌شده نباشد
