@@ -24,7 +24,7 @@ class NomreController extends Controller
 
         $data = $this->cacheService->remember(
             "student_nomre_{$user->id}",
-            360,
+            3600,
             function () use ($user, $masterName) {
                 $lessonStatus = LessonStatus::where('master_name' , $masterName) ->get();
                 $userData = UserData::where('user_id', $user->id)->first();

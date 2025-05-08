@@ -55,7 +55,7 @@ class VahedController extends Controller // تعریف کلاس VahedController 
                         return false; // اگر درس پیش‌نیاز دارد و دانشجو هیچ درسی را پاس نکرده
                     }
 
-                    $lessonsName = explode('_', $lesson->lesten_name); // تبدیلدرس ها به آرایه
+                    $lessonsName = explode('_', $lesson->lesten_name); // تبدیل درس ها به آرایه
                     $prerequisites = explode('_', $lesson->prerequisites); // تبدیل پیش‌نیازها به آرایه
                     $passedLessons = explode('_', $passedLesson); // تبدیل درس‌های پاس‌شده به آرایه
 
@@ -132,15 +132,32 @@ class VahedController extends Controller // تعریف کلاس VahedController 
                 })
                 ->get()
                 ->filter(function ($lesson) use ($passedLesson) {
-                    // بررسی پیش‌نیازها
-                    if (empty($lesson->prerequisites)) return true;
-                    if (empty($passedLesson)) return false;
-                    $prerequisites = explode(' ', $lesson->prerequisites);
-                    $passedLessons = explode(' ', $passedLesson);
-                    foreach ($prerequisites as $prerequisite) {
-                        if (in_array($prerequisite, $passedLessons)) return true;
+
+                    if (empty($passedLesson)) {
+                        return false; // اگر درس پیش‌نیاز دارد و دانشجو هیچ درسی را پاس نکرده
                     }
-                    return false;
+
+                    $lessonsName = explode('_', $lesson->lesten_name); // تبدیل درس ها به آرایه
+                    $prerequisites = explode('_', $lesson->prerequisites); // تبدیل پیش‌نیازها به آرایه
+                    $passedLessons = explode('_', $passedLesson); // تبدیل درس‌های پاس‌شده به آرایه
+
+                    foreach ($lessonsName as $name ) {
+                        if (in_array($name, $passedLessons)) { // اگر  درس در پاس شده ها باشد
+                            return false;
+                        }
+                    }
+
+                    if (empty($lesson->prerequisites)) {
+                        return true; // اگر درس پیش‌نیاز نداردو پاس نشده است، می‌تواند انتخاب شود
+                    }
+
+                    foreach ($prerequisites as $prerequisite) { // حلقه برای بررسی پیش‌نیازها
+                        if (!in_array($prerequisite, $passedLessons)) { // اگر یکی از پیش‌نیازها در لیست پاس‌شده نباشد
+                            return false; // همه پیش‌نیازها پاس نشده‌اند، مقدار false برمی‌گردد
+                        }
+                    }
+
+                    return true; // اگر حلقه تمام شود و همه پیش‌نیازها پاس شده باشند، مقدار true برمی‌گردد
                 })
                 ->values();
 

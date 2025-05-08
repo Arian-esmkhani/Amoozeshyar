@@ -36,7 +36,7 @@ class profilController extends Controller // تعریف کلاس profilControlle
 
         $data = $this->cacheService->remember(
             $cacheKey,
-            360, // زمان انقضای کش به ثانیه
+            3600, // زمان انقضای کش به ثانیه
             // تابعی که داده‌ها را از پایگاه داده می‌گیرد
             function () use ($user, $takeLessonIds) {
                 $userStatus = UserStatus::where('user_id', $user->id)->select('term', 'passed_units')->first(); // وضعیت کاربر

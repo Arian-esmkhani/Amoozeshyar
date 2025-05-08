@@ -175,18 +175,18 @@ class EntekhabVahed extends Component
                 ->where('student_name', $this->userData->name)
                 ->first();
 
-            if ($statusRecord) {
-                $statusRecord->lesson_status = 'حذف'; // Set status
-                $statusRecord->save();          // Save change
-                $statusRecord->delete();         // Soft delete
-            } else {
-                Log::warning("EntekhabVahed: LessonStatus record not found for lesson_id {$lessonId} / student {$this->userData->name} during removal.");
-            }
+                if ($statusRecord) {
+                    $statusRecord->lesson_status = 'حذف'; // تنظیم وضعیت درس به "حذف"
+                    $statusRecord->save();          // ذخیره تغییرات در پایگاه داده
+                    $statusRecord->delete();         // حذف نرم (Soft Delete) رکورد
+
+                } else {
+                    Log::warning("انتخاب واحد: رکورد وضعیت درس برای lesson_id {$lessonId} / دانشجو {$this->userData->name} در هنگام حذف پیدا نشد.");
+                }
 
 
             if ($lesson) {
                 $lesson->registered_count = max(0, $lesson->registered_count - 1);
-                LessonOffered::where('lesten_id', $lessonId)->where('registered_count', '>', 0)->decrement('registered_count');
             }
         } else {
             // --- افزودن درس ---

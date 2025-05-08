@@ -9,9 +9,6 @@ class CacheService
     // زمان پیش‌فرض برای ذخیره‌سازی داده‌ها: ۱ ساعت
     private const DEFAULT_TTL = 3600;
 
-    // زمان ذخیره‌سازی برای تلاش‌های ورود: 4 دقیقه
-    private const LOGIN_ATTEMPTS_TTL = 240;
-
     // زمان ذخیره‌سازی برای اطلاعات کاربر: 2 ساعت
     private const USER_CACHE_TTL = 7200;
 
@@ -73,27 +70,6 @@ class CacheService
     public function decrement(string $key, int $value = 1): int
     {
         return (int) Redis::decrby($key, $value); // کاهش مقدار با مقدار مشخص
-    }
-
-    // دریافت تعداد تلاش‌های ورود برای یک کاربر
-    public function getLoginAttempts(string $username): int
-    {
-        return (int) $this->get("login_attempts.{$username}", 0); // مقدار پیش‌فرض ۰ اگر کلید وجود نداشته باشد
-    }
-
-    // افزایش تعداد تلاش‌های ورود برای یک کاربر
-    public function incrementLoginAttempts(string $username): int
-    {
-        $key = "login_attempts.{$username}";
-        $attempts = $this->increment($key); // افزایش شمارنده
-        Redis::expire($key, self::LOGIN_ATTEMPTS_TTL); // تنظیم زمان انقضا برای تلاش‌های ورود
-        return $attempts;
-    }
-
-    // بازنشانی شمارنده تلاش‌های ورود برای یک کاربر
-    public function resetLoginAttempts(string $username): bool
-    {
-        return $this->forget("login_attempts.{$username}"); // حذف کلید تلاش‌های ورود
     }
 
     // دریافت اطلاعات کاربر از کش یا پایگاه داده اگر کش نشده باشد

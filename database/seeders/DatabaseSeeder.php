@@ -46,8 +46,5 @@ class DatabaseSeeder extends Seeder
             UserStatus::factory()->create(['user_id' => $user->id]);
             LoginHistory::factory()->count(3)->create(['user_id' => $user->id]);
         });
-
-        // ایجاد درس‌های ارائه شده
-        LestenOffered::factory()->count(20)->create();
     }
 }

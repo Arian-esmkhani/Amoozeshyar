@@ -50,4 +50,3 @@ class ProcessUserLogin implements ShouldQueue // تعریف کلاس ProcessUser
         }
     }
 }
-

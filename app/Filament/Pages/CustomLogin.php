@@ -8,18 +8,18 @@ use Filament\Forms\Components\Component;
 use Illuminate\Contracts\Support\Htmlable;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Illuminate\Validation\ValidationException;
-use App\Models\UserBase; // Import UserBase model
-use Illuminate\Support\Facades\Auth; // Import Auth facade
+use App\Models\UserBase; // ایمپورت مدل UserBase
+use Illuminate\Support\Facades\Auth; // ایمپورت Auth
 
 class CustomLogin extends BaseLogin
 {
     public function mount(): void
     {
-        parent::mount(); // Call the parent mount method
+        parent::mount(); // فراخوانی متد mount والد
 
-        // Optional: Set a default username if needed, for example, from session or request
+        // تنظیم مقدار پیش‌فرض برای نام کاربری در صورت نیاز (مثلاً از سشن یا درخواست)
         // $this->form->fill([
-        //     'username' => old('username'), // Use 'username' instead of 'email'
+        //     'username' => old('username'),
         //     'remember' => old('remember'),
         // ]);
     }
@@ -30,85 +30,66 @@ class CustomLogin extends BaseLogin
             'form' => $this->form(
                 $this->makeForm()
                     ->schema([
-                        $this->getUsernameFormComponent(), // Use username component
-                        $this->getPasswordFormComponent(),
-                        $this->getRememberFormComponent(),
+                        $this->getUsernameFormComponent(), // استفاده از کامپوننت نام کاربری
+                        $this->getPasswordFormComponent(), // کامپوننت رمز عبور
                     ])
                     ->statePath('data'),
             ),
         ];
     }
 
-    protected function getUsernameFormComponent(): Component // New method for username
+    protected function getUsernameFormComponent(): Component // متد جدید برای نام کاربری
     {
         return TextInput::make('username')
-            ->label(__('username')) // Change label to Persian
+            ->label(__('username')) // تغییر لیبل به فارسی
             ->required()
             ->autocomplete()
             ->autofocus();
     }
 
-    /**
-     * Override the getCredentialsFromFormData method to use 'username' instead of 'email'.
-     */
+
     protected function getCredentialsFromFormData(array $data): array
     {
         return [
-            'username' => $data['username'], // Use 'username' key
+            'username' => $data['username'], // استفاده از کلید 'username'
             'password' => $data['password'],
         ];
     }
 
     /**
-     * Override the authenticate method to add role check.
+     * بازنویسی متد authenticate برای اضافه‌کردن بررسی نقش.
      */
     public function authenticate(): ?LoginResponse
     {
         try {
-            // Use the modified getCredentialsFromFormData
+            // دریافت داده‌های فرم
             $data = $this->form->getState();
             $credentials = $this->getCredentialsFromFormData($data);
 
-            // Attempt authentication using Laravel's Auth facade
-            if (! auth()->attempt($credentials, $data['remember'])) {
+            // تلاش برای احراز هویت با استفاده از فاساد Auth
+            if (! Auth::attempt($credentials)) {
                 throw ValidationException::withMessages([
                     'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
                 ]);
             }
 
-            // Get the authenticated user
-            $user = auth()->user();
+            // دریافت کاربر احراز هویت‌شده
+            $user = Auth::user();
 
-            // Check if the user is an admin
+            // بررسی نقش کاربر (مدیر باشد)
             if (!$user instanceof UserBase || !$user->isAdmin()) {
-                auth()->logout(); // Log out the user if not an admin
+                Auth::logout(); // خروج کاربر در صورت عدم تأیید نقش
                 throw ValidationException::withMessages([
-                    'data.username' => __('auth.failed'), // Use a generic failed message or create a custom one
+                    'data.username' => __('auth.failed'), // پیام خطای عمومی یا سفارشی
                 ]);
             }
 
-            // Regenerate session and prepare response if authentication and role check are successful
+            // بازسازی سشن و آماده‌سازی پاسخ در صورت موفقیت احراز هویت و بررسی نقش
             session()->regenerate();
             return app(LoginResponse::class);
         } catch (ValidationException $exception) {
-            // Rate limiting is handled by Laravel's throttle middleware
-            // which is usually applied to the login route.
-            // Filament's default Login class also adds rate limiting.
-            // We keep the parent's rate limiting logic here.
-
-            // Throw the validation exception to display errors
+            // پرتاب استثناء اعتبارسنجی برای نمایش خطاها
             throw $exception;
         }
     }
-
-    // Optional: Change page title or heading if needed
-    // public function getTitle(): string | Htmlable
-    // {
-    //     return __('Admin Login');
-    // }
-
-    // public function getHeading(): string | Htmlable
-    // {
-    //     return __('Admin Panel Login');
-    // }
 }

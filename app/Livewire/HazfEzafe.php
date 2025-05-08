@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Cache;
 
 //کلاس ایجاد کامپننت حذف و اضافه
 class HazfEzafe extends Component

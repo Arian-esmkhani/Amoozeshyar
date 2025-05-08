@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->default() // تنظیمات پیش‌فرض پنل
             ->id('admin') // مشخص کردن شناسه پنل
             ->path('admin') // مسیر دسترسی به پنل
-            ->login(CustomLogin::class) // Register the custom login page
+            ->login(CustomLogin::class) 
             ->colors([
                 'primary' => Color::Amber, // تنظیم رنگ اصلی پنل
             ])

@@ -31,7 +31,7 @@ class AccountController extends Controller
         // ذخیره یا بازیابی اطلاعات از کش
         $data = $this->cacheService->remember(
             'user_account_' . $user->id, // کلید یکتای کش بر اساس آی‌دی کاربر
-            300, // مدت زمان اعتبار کش (به ثانیه)
+            3600, // مدت زمان اعتبار کش (به ثانیه)
             function () use ($user) {
                 // دریافت اطلاعات کاربر از جدول UserData
                 $userData = UserData::where('user_id', $user->id)->first();

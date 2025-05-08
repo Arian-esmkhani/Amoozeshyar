@@ -11,21 +11,11 @@ use Illuminate\Validation\ValidationException; // خطای اعتبارسنجی
 // کنترلر مدیریت ورود و خروج کاربران
 class LoginController extends Controller
 {
-    /**
-     * سرویس احراز هویت
-     *
-     * این سرویس مسئولیت انجام عملیات‌های مربوط به احراز  را بر عهده دارد
-     */
+    // سرویس احراز هویت
     private AuthService $authService;
 
-    /**
-     * سازنده کلاس
-     *
-     * @param AuthService $authService سرویس احراز هویت
-     *
-     * این متد سرویس احراز هویت را تزریق می‌کند و middleware مربوط به
-     * دسترسی مهمانان را تنظیم می‌کند
-     */
+
+    //سازنده کلاس
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
@@ -49,9 +39,6 @@ class LoginController extends Controller
      *
      * @param Request $request درخواست ورود شامل نام کاربری و رمز عبور
      * @return \Illuminate\Http\RedirectResponse
-     *
-     * این متد اطلاعات ورود را اعتبارسنجی می‌کند و در صورت معتبر بودن
-     * کاربر را وارد سیستم می‌کند و به صفحه اصلی هدایت می‌کند
      */
     public function login(Request $request)
     {
