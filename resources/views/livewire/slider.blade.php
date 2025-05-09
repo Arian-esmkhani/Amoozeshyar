@@ -84,34 +84,34 @@
                 {{-- دکمه‌های ناوبری چپ/راست --}}
                 {{-- Improved styling for buttons --}}
                 @if($itemCount > 1)
-                    {{-- دکمه قبلی --}}
-                    <button wire:click="previousSlide" aria-label="اسلاید قبلی"
+
+                    <button wire:click="nextSlide" aria-label="اسلاید بعد"
                             class="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 z-10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    {{-- دکمه بعدی --}}
-                    <button wire:click="nextSlide" aria-label="اسلاید بعدی"
+
+                    <button wire:click="previousSlide" aria-label="اسلاید قبلی"
                             class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 z-10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 @endif
             </div>
 
-            {{-- نقاط ناوبری (خارج از محفظه اصلی اسلایدر) --}}
+            {{-- نقاط ناوبری  --}}
             {{-- Improved styling for dots --}}
-            @if($itemCount > 1)
-                <div class="flex justify-center items-center space-x-2 space-x-reverse mt-5 z-10"> {{-- Added space-x-reverse for RTL --}}
+            {{-- @if($itemCount > 1)
+                <div class="flex justify-center items-center space-x-3 space-x-reverse mt-5 z-10">
                     @foreach ($items as $index => $item)
                         <button wire:click="goToSlide({{ $index }})"
                                 aria-label="رفتن به اسلاید {{ $index + 1 }}"
-                                class="rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900
+                                class="rounded-full transition-all duration-200 ease-in-out focus:outline-none focus:ring-1 focus:ring-purple-500 focus:ring-offset-1 focus:ring-offset-gray-900
                                        {{ $currentSlide === $index
-                                          ? 'w-6 h-2 bg-purple-500'       // Active dot wider
-                                          : 'w-2 h-2 bg-gray-500/70 hover:bg-gray-400' }}}}"> {{-- Inactive dot smaller, hover effect --}}
+                                          ? 'w-6 h-2 bg-purple-300'
+                                          : 'w-2 h-2 bg-gray-500/70 hover:bg-gray-400' }}}}">
                         </button>
                     @endforeach
                 </div>
-            @endif
+            @endif --}}
         @else
             {{-- پیغام عدم وجود آیتم --}}
             <div class="text-center text-gray-500 bg-gray-800/60 rounded-2xl p-10 h-[400px] md:h-[350px] flex items-center justify-center">

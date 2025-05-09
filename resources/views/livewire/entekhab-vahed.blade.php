@@ -2,7 +2,7 @@
     <!-- بخش نمایش پیام‌های سیستم -->
     @if (session()->has('message'))
         <div class="mb-6">
-            <div class="p-4 rounded-lg text-center {{ session('type') === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20' }}">
+            <div class="fixed top-4 left-[65%] -translate-x-[45%] p-4 rounded-lg text-center z-[9999] font-bold shadow-lg  {{ session('type') === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20' }}">
                 <span>{{ session('message') }}</span>
             </div>
         </div>
@@ -72,7 +72,6 @@
                                     <td class="py-3 px-5">{{ $lesson->lesten_master }}</td>
                                     <td class="py-3 px-5">
                                         @php
-                                            // Safely decode JSON and display schedule
                                             try {
                                                 $schedule = json_decode($lesson->class_schedule, false, 512, JSON_THROW_ON_ERROR);
                                                 if (isset($schedule->days) && isset($schedule->time->start) && isset($schedule->time->end)) {
@@ -163,7 +162,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <!-- پس‌زمینه تار -->
-                <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" wire:click="$set('showLessonDetails', false)"></div>
+                <div class="fixed inset-0 bg-black/20 backdrop-blur-sm" wire:click="$set('showLessonDetails', false)"></div>
 
                 <!-- محتوای مودال -->
                 <div class="relative bg-gray-900 rounded-xl p-8 max-w-2xl w-full border border-gray-700">

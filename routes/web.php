@@ -22,7 +22,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // مسیرهای نیازمند احراز هویت
-Route::middleware('auth' , 'throttle:60,1' ,'auth.session' )->group(function () {
+Route::middleware('auth' , 'throttle:100,1' ,'auth.session' )->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/amoozeshyar', [MainController::class, 'index'])->name('amoozeshyar');
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');
