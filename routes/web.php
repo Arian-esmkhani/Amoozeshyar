@@ -9,10 +9,6 @@ use App\Http\Controllers\NomreController;
 use App\Http\Controllers\profilController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Providers\Filament\AdminPanelProvider;
-use Filament\Facades\Filament;
-use Filament\Panel;
-use App\Http\Middleware\StudentRoleMiddleware;
 
 // مسیر اصلی - اگر کاربر لاگین کرده باشد به main می‌رود، در غیر این صورت به azad
 Route::get('/', function () {
@@ -26,7 +22,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // مسیرهای نیازمند احراز هویت
-Route::middleware('auth')->group(function () {
+Route::middleware('auth' , 'throttle:60,1' ,'auth.session' )->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/amoozeshyar', [MainController::class, 'index'])->name('amoozeshyar');
     Route::get('/entekhab', [VahedController::class, 'entekhab'])->name('entekhab-vahed');

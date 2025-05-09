@@ -34,8 +34,8 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             // اگر کاربر وارد شده باشد (احراز هویت شده باشد)
             if (Auth::guard($guard)->check()) {
-                // هدایت کاربر به داشبورد
-                return redirect('/dashboard');
+                // هدایت کاربر
+                return redirect('/amoozeshyar');
             }
         }
 

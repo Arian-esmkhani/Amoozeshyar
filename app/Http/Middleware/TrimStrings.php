@@ -23,7 +23,14 @@ class TrimStrings
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // ارسال درخواست به مرحله بعدی پردازش بدون هیچ تغییری
+        // حذف فضاهای اضافی از ورودی ها با فرمت استرینگ
+        $trimmed = array_map(fn($value) => is_string($value) ? trim($value) : $value, $request->all());
+
+        // به‌روزرسانی درخواست با مقادیر اصلاح‌شده
+        $request->merge($trimmed);
+
+
+        // ارسال درخواست به مرحله بعدی پردازش
         return $next($request);
     }
 }

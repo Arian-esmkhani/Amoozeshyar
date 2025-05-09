@@ -2,20 +2,15 @@
 
 namespace App\Http\Middleware;
 
-// استفاده از Closure برای ادامه پردازش درخواست‌ها
 use Closure;
-
-// استفاده از کلاس Request برای دریافت اطلاعات درخواست کاربر
 use Illuminate\Http\Request;
-
-// استفاده از کلاس Response برای مدیریت پاسخ‌های HTTP
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Session;
 
-// تعریف کلاس VerifyCsrfToken
 class VerifyCsrfToken
 {
     /**
-     * مدیریت یک درخواست ورودی.
+     * مدیریت یک درخواست ورودی و بررسی توکن CSRF.
      *
      * @param  Request $request اطلاعات مربوط به درخواست ورودی
      * @param  Closure $next تابعی که درخواست را به مرحله بعدی پردازش هدایت می‌کند
@@ -23,7 +18,17 @@ class VerifyCsrfToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // ارسال درخواست به مرحله بعدی پردازش بدون اعتبارسنجی CSRF در این نسخه
+        // فقط درخواست‌های POST، PUT، DELETE نیاز به اعتبارسنجی CSRF دارند
+        // if (in_array($request->method(), ['POST', 'PUT', 'DELETE'])) {
+        //     $token = $request->input('_token'); // دریافت توکن ارسال‌شده از فرم
+        //     $sessionToken = Session::token();  // دریافت توکن ذخیره‌شده در جلسه
+
+        //     // بررسی اعتبار توکن
+        //     if (!$token || $token !== $sessionToken) {
+        //         return response()->json(['error' => 'CSRF token mismatch.'], 419); // خطای عدم تطابق توکن
+        //     }
+        // }
+
         return $next($request);
     }
 }
